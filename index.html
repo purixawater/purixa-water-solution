@@ -5,42 +5,45 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Purixa Water Solution</title>
 <style>
-body{
-margin:0;
-font-family:Arial,sans-serif;
-background:#eaf8ff;
-color:#222;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:Arial,sans-serif;background:#f4fbff;color:#333;}
 header{
-background:#0077cc;
-color:white;
-padding:40px 20px;
+background:linear-gradient(135deg,#0077cc,#00b4ff);
+color:#fff;
 text-align:center;
+padding:60px 20px;
 }
-section{
-padding:20px;
-}
-.card{
-background:white;
-padding:20px;
-border-radius:12px;
-box-shadow:0 2px 8px rgba(0,0,0,.15);
-margin-bottom:20px;
-}
+header h1{font-size:38px;}
+header p{margin:10px 0 20px;}
 .btn{
 display:inline-block;
-padding:12px 20px;
-background:#0077cc;
-color:white;
-text-decoration:none;
-border-radius:8px;
+padding:12px 22px;
 margin:5px;
+background:#fff;
+color:#0077cc;
+text-decoration:none;
+border-radius:30px;
+font-weight:bold;
+}
+section{padding:40px 20px;max-width:1000px;margin:auto;}
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
+.card{
+background:#fff;
+padding:20px;
+border-radius:15px;
+box-shadow:0 5px 15px rgba(0,0,0,.1);
+text-align:center;
 }
 footer{
-background:#003b66;
-color:white;
+background:#0077cc;
+color:#fff;
 text-align:center;
-padding:15px;
+padding:20px;
+margin-top:30px;
 }
 </style>
 </head>
@@ -48,34 +51,54 @@ padding:15px;
 
 <header>
 <h1>PURIXA WATER SOLUTION</h1>
-<p>Pure Water. Pure Life.</p>
+<p><b>Pure Water. Pure Life.</b></p>
+
 <a class="btn" href="tel:9998267304">📞 Call Now</a>
 <a class="btn" href="https://wa.me/917016715463">💬 WhatsApp</a>
 </header>
 
 <section>
+<h2 style="text-align:center;margin-bottom:20px;">Our Services</h2>
+
+<div class="cards">
 <div class="card">
-<h2>Our Services</h2>
-<ul>
-<li>RO Sales</li>
-<li>RO Installation</li>
-<li>RO Repair & Service</li>
-<li>AMC Plans</li>
-<li>RO Spare Parts</li>
-</ul>
+<h3>💧 RO Sales</h3>
+<p>Best Quality Water Purifiers</p>
 </div>
 
 <div class="card">
-<h2>Contact</h2>
-<p><b>Arvind Bokhani</b></p>
-<p>📞 9998267304</p>
-<p>💬 7016715463</p>
-<p>📍 Rajkot, Gujarat</p>
+<h3>🔧 Installation</h3>
+<p>Professional Installation Service</p>
+</div>
+
+<div class="card">
+<h3>🛠 RO Service</h3>
+<p>Quick Repair & Maintenance</p>
+</div>
+
+<div class="card">
+<h3>📅 AMC Plans</h3>
+<p>Affordable Annual Maintenance</p>
+</div>
+
+<div class="card">
+<h3>⚙ Spare Parts</h3>
+<p>Genuine RO Spare Parts</p>
+</div>
+
+<div class="card">
+<h3>📍 Contact</h3>
+<p>Arvind Bokhani<br>
+Rajkot, Gujarat<br>
+📞9998267304<br>
+💬7016715463</p>
+</div>
+
 </div>
 </section>
 
 <footer>
-© 2026 Purixa Water Solution
+© 2026 Purixa Water Solution | All Rights Reserved
 </footer>
 
 </body>
