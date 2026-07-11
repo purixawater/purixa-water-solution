@@ -1,0 +1,86 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial,sans-serif;
+  background:#f4fbff;
+  color:#333;
+}
+
+.hero{
+  background:linear-gradient(135deg,#0077cc,#00b4ff);
+  color:#fff;
+  text-align:center;
+  padding:60px 20px;
+}
+
+.logo{
+  width:220px;
+  max-width:90%;
+  margin-bottom:20px;
+}
+
+.hero h1{
+  font-size:38px;
+  margin-bottom:10px;
+}
+
+.hero p{
+  font-size:18px;
+  margin-bottom:20px;
+}
+
+.buttons{
+  margin-top:20px;
+}
+
+.btn{
+  display:inline-block;
+  background:#fff;
+  color:#0077cc;
+  padding:12px 22px;
+  margin:8px;
+  border-radius:30px;
+  text-decoration:none;
+  font-weight:bold;
+}
+
+section{
+  max-width:1100px;
+  margin:auto;
+  padding:50px 20px;
+}
+
+h2{
+  text-align:center;
+  color:#0077cc;
+  margin-bottom:25px;
+}
+
+.services{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:white;
+  padding:25px;
+  border-radius:15px;
+  text-align:center;
+  box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.contact{
+  text-align:center;
+}
+
+footer{
+  background:#0077cc;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
