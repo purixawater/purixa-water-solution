@@ -1,31 +1,29 @@
 // Purixa Water Solution
 
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("Purixa Water Solution Loaded");
 
-  // Smooth button click animation
-  const buttons = document.querySelectorAll(".btn");
-
-  buttons.forEach(function(btn){
-    btn.addEventListener("click", function(){
-      this.style.transform = "scale(0.95)";
-
-      setTimeout(() => {
-        this.style.transform = "scale(1)";
-      }, 150);
-    });
-  });
-
-  // Card animation on hover
-  const cards = document.querySelectorAll(".card");
-
-  cards.forEach(function(card){
-    card.addEventListener("mouseenter", function(){
-      this.style.transform = "translateY(-8px)";
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener("click", function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute("href"));
+            if(target){
+                target.scrollIntoView({
+                    behavior: "smooth"
+                });
+            }
+        });
     });
 
-    card.addEventListener("mouseleave", function(){
-      this.style.transform = "translateY(0)";
-    });
-  });
+    // Card hover animation
+    document.querySelectorAll(".card").forEach(card => {
+        card.addEventListener("mouseenter", () => {
+            card.style.transform = "translateY(-8px)";
+        });
 
+        card.addEventListener("mouseleave", () => {
+            card.style.transform = "translateY(0)";
+        });
+    });
 });
