@@ -1,3 +1,4 @@
+console.log("Slider Loaded");
 // Auto Hero Slider
 const slides = [
 "slider1.png",
