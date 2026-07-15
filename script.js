@@ -1,8 +1,8 @@
 // Auto Hero Slider
 const slides = [
-"slider1.jpg",
-"slider2.jpg",
-"slider3.jpg"
+"slider1.png",
+"slider2.png",
+"slider3.png"
 ];
 
 let current = 0;
