@@ -1,17 +1,13 @@
-/* =========================
-   Purixa Water Solution V4
-========================= */
-
 *{
 margin:0;
 padding:0;
 box-sizing:border-box;
-font-family:'Poppins',sans-serif;
 scroll-behavior:smooth;
+font-family:'Poppins',sans-serif;
 }
 
 body{
-background:#f5fbff;
+background:#f4f8fc;
 color:#222;
 line-height:1.6;
 }
@@ -27,8 +23,8 @@ position:fixed;
 top:0;
 left:0;
 width:100%;
-background:#ffffff;
-box-shadow:0 4px 15px rgba(0,0,0,.08);
+background:#fff;
+box-shadow:0 2px 15px rgba(0,0,0,.1);
 z-index:1000;
 }
 
@@ -46,33 +42,28 @@ gap:10px;
 }
 
 .logo img{
-width:55px;
-height:55px;
+height:45px;
 }
 
 .logo h2{
-font-size:22px;
+font-size:24px;
 color:#0077cc;
-}
-
-nav{
-display:flex;
-gap:20px;
 }
 
 nav a{
 text-decoration:none;
+margin-left:20px;
 color:#333;
 font-weight:600;
 transition:.3s;
 }
 
 nav a:hover{
-color:#0077cc;
+color:#0099ff;
 }
 
 .hero{
-margin-top:90px;
+margin-top:80px;
 position:relative;
 text-align:center;
 }
@@ -81,7 +72,6 @@ text-align:center;
 width:100%;
 height:500px;
 object-fit:cover;
-border-radius:15px;
 }
 
 .hero-content{
@@ -89,25 +79,23 @@ position:absolute;
 top:50%;
 left:50%;
 transform:translate(-50%,-50%);
+color:#fff;
 background:rgba(0,0,0,.45);
 padding:30px;
 border-radius:15px;
-color:#fff;
-width:90%;
-max-width:700px;
 }
 
 .hero-content h1{
-font-size:46px;
+font-size:48px;
 margin-bottom:15px;
 }
 
 .hero-content p{
-font-size:20px;
+font-size:18px;
 margin-bottom:25px;
 }
 
-.buttons{
+.hero-buttons{
 display:flex;
 justify-content:center;
 gap:15px;
@@ -116,11 +104,12 @@ flex-wrap:wrap;
 
 .call-btn,
 .whatsapp-btn{
-padding:14px 28px;
-border-radius:40px;
+padding:12px 28px;
+border-radius:50px;
 text-decoration:none;
-font-weight:600;
+font-weight:bold;
 color:#fff;
+transition:.3s;
 }
 
 .call-btn{
@@ -130,73 +119,83 @@ background:#0077cc;
 .whatsapp-btn{
 background:#25D366;
 }
-/* ===== About, Services, Products ===== */
 
-.about,
-.services,
-.products,
-.gallery,
-.reviews,
-.contact,
-.counter{
+.call-btn:hover,
+.whatsapp-btn:hover{
+transform:scale(1.05);
+}
+section{
 padding:80px 0;
 }
 
-.about h2,
-.services h2,
-.products h2,
-.gallery h2,
-.reviews h2,
-.contact h2{
+h2{
 text-align:center;
 font-size:36px;
 color:#0077cc;
-margin-bottom:20px;
+margin-bottom:40px;
 }
 
-.about p{
-max-width:850px;
-margin:auto;
-text-align:center;
-font-size:18px;
-color:#555;
+.about .container,
+.commercial-box{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:40px;
+flex-wrap:wrap;
 }
 
-.service-grid{
+.about-image img,
+.commercial-box img{
+width:100%;
+max-width:450px;
+border-radius:20px;
+box-shadow:0 10px 25px rgba(0,0,0,.15);
+}
+
+.about-content{
+flex:1;
+}
+
+.about-content p{
+margin:20px 0;
+}
+
+.about-content ul{
+padding-left:20px;
+}
+
+.about-content li{
+margin:12px 0;
+}
+
+.service-grid,
+.product-grid,
+.gallery-grid,
+.counter-grid{
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
 gap:25px;
-margin-top:40px;
 }
 
 .card{
 background:#fff;
 padding:25px;
-border-radius:18px;
+border-radius:20px;
 box-shadow:0 8px 20px rgba(0,0,0,.08);
-transition:.3s;
 text-align:center;
+transition:.3s;
 }
 
 .card:hover{
-transform:translateY(-10px);
-box-shadow:0 12px 25px rgba(0,0,0,.15);
+transform:translateY(-8px);
 }
 
-.card h3{
-color:#0077cc;
+.card img{
+width:100%;
+height:220px;
+object-fit:cover;
+border-radius:15px;
 margin-bottom:15px;
-}
-
-.card p{
-color:#555;
-}
-
-.gallery-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
-gap:25px;
-margin-top:30px;
 }
 
 .gallery-grid img{
@@ -204,12 +203,12 @@ width:100%;
 height:250px;
 object-fit:cover;
 border-radius:15px;
+cursor:pointer;
 transition:.3s;
-box-shadow:0 5px 15px rgba(0,0,0,.1);
 }
 
 .gallery-grid img:hover{
-transform:scale(1.05);
+transform:scale(1.04);
 }
 
 .counter{
@@ -217,106 +216,121 @@ background:#0077cc;
 color:#fff;
 }
 
-.counter-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-gap:25px;
+.counter h2{
+color:#fff;
+}
+
+.counter-grid div{
 text-align:center;
 }
 
-.counter h2{
+.counter-grid h3{
 font-size:42px;
 margin-bottom:10px;
 }
-
-.counter p{
-font-size:18px;
+.reviews,
+.faq,
+.brands,
+.contact,
+.quick-contact,
+.business-hours{
+background:#f8fbff;
 }
-/* ===== Contact ===== */
 
-.contact-info{
+.contact p{
 text-align:center;
-margin-bottom:30px;
-}
-
-.contact-info p{
-font-size:18px;
 margin:12px 0;
+font-size:17px;
 }
 
-.contact-info a{
+.contact a{
 color:#0077cc;
 text-decoration:none;
 font-weight:600;
 }
 
-.contact iframe{
+iframe{
 width:100%;
+margin-top:25px;
 border-radius:15px;
-box-shadow:0 8px 20px rgba(0,0,0,.12);
+box-shadow:0 8px 20px rgba(0,0,0,.15);
 }
 
-/* ===== Footer ===== */
+.quick-contact{
+background:#0077cc;
+color:#fff;
+text-align:center;
+}
+
+.quick-contact h2{
+color:#fff;
+margin-bottom:20px;
+}
+
+.quick-contact p{
+margin-bottom:25px;
+}
+
+.business-hours{
+text-align:center;
+}
+
+.business-hours p{
+margin:10px 0;
+font-size:17px;
+}
 
 footer{
-background:#003b73;
+background:#0d47a1;
 color:#fff;
-padding:25px 0;
 text-align:center;
-margin-top:40px;
+padding:20px;
 }
-
-/* ===== Floating WhatsApp ===== */
 
 .whatsapp-float{
 position:fixed;
 right:20px;
 bottom:20px;
-width:60px;
-height:60px;
 background:#25D366;
 color:#fff;
+width:60px;
+height:60px;
+border-radius:50%;
 display:flex;
 align-items:center;
 justify-content:center;
-border-radius:50%;
 font-size:30px;
 text-decoration:none;
-box-shadow:0 8px 20px rgba(0,0,0,.25);
+box-shadow:0 8px 20px rgba(0,0,0,.3);
 z-index:999;
-transition:.3s;
 }
 
 .whatsapp-float:hover{
 transform:scale(1.1);
 }
 
-/* ===== Mobile ===== */
-
-@media (max-width:768px){
+@media(max-width:768px){
 
 .header .container{
 flex-direction:column;
-padding:12px;
 }
 
 nav{
-flex-wrap:wrap;
-justify-content:center;
-gap:12px;
 margin-top:10px;
 }
 
-.logo h2{
-font-size:18px;
+nav a{
+display:inline-block;
+margin:8px;
 }
 
 .hero img{
-height:260px;
+height:300px;
 }
 
 .hero-content{
-padding:18px;
+width:90%;
+padding:20px;
 }
 
 .hero-content h1{
@@ -327,26 +341,19 @@ font-size:28px;
 font-size:15px;
 }
 
-.buttons{
+.about .container,
+.commercial-box{
 flex-direction:column;
-}
-
-.call-btn,
-.whatsapp-btn{
-width:100%;
 text-align:center;
 }
 
-.about h2,
-.services h2,
-.products h2,
-.gallery h2,
-.reviews h2,
-.contact h2{
+.about-image img,
+.commercial-box img{
+max-width:100%;
+}
+
+h2{
 font-size:28px;
 }
 
-.gallery-grid img{
-height:200px;
-}
 }
