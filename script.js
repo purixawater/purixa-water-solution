@@ -2,9 +2,9 @@ alert("Script Working");
 console.log("Slider Loaded");
 // Auto Hero Slider
 const slides = [
-"slider1.png",
-"slider2.png",
-"slider3.png"
+"slide1.png",
+"slide2.png",
+"slide3.png"
 ];
 
 let current = 0;
