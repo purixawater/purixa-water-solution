@@ -1,4 +1,3 @@
-
 console.log("Slider Loaded");
 // Auto Hero Slider
 const slides = [
