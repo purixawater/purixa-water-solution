@@ -28,9 +28,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 const images = [
-  "slide1.jpg",
-  "slide2.jpg",
-  "slide3.jpg"
+  "slide1.png",
+  "slide2.png",
+  "slide3.png"
 ];
 
 let i = 0;
