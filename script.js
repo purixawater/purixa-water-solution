@@ -1,52 +1,73 @@
-/* ==========================
-   Purixa Water Solution V4
-========================== */
-
-// Auto Image Slider
+// Auto Hero Slider
 const slides = [
-  "slide1.png",
-  "slide2.png",
-  "slide3.png"
+"slider1.jpg",
+"slider2.jpg",
+"slider3.jpg"
 ];
 
-let currentSlide = 0;
-const slider = document.getElementById("slide");
+let current = 0;
+const hero = document.getElementById("slide");
 
-if (slider) {
-  setInterval(() => {
-    currentSlide = (currentSlide + 1) % slides.length;
-    slider.style.opacity = 0;
-
-    setTimeout(() => {
-      slider.src = slides[currentSlide];
-      slider.style.opacity = 1;
-    }, 300);
-
-  }, 4000);
+if(hero){
+setInterval(()=>{
+current = (current + 1) % slides.length;
+hero.src = slides[current];
+},3000);
 }
 
-// Smooth Scroll
-document.querySelectorAll('nav a').forEach(link => {
-  link.addEventListener('click', function(e) {
-    e.preventDefault();
+// Counter Animation
+const counters = document.querySelectorAll(".counter-grid h3");
 
-    const target = document.querySelector(this.getAttribute('href'));
+const startCounter = () => {
+counters.forEach(counter => {
+const target = parseInt(counter.innerText.replace(/\D/g,""));
+let count = 0;
 
-    if (target) {
-      target.scrollIntoView({
-        behavior: "smooth"
-      });
-    }
-  });
+const update = () => {
+count += Math.ceil(target / 100);
+
+if(count < target){
+counter.innerText = count + "+";
+requestAnimationFrame(update);
+}else{
+counter.innerText = target + "+";
+}
+};
+
+update();
+});
+};
+
+const counterSection = document.querySelector(".counter");
+
+if(counterSection){
+const observer = new IntersectionObserver((entries)=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+startCounter();
+observer.disconnect();
+}
+});
 });
 
-// Header Shadow on Scroll
-window.addEventListener("scroll", () => {
-  const header = document.querySelector(".header");
+observer.observe(counterSection);
+}
 
-  if (window.scrollY > 50) {
-    header.style.boxShadow = "0 6px 20px rgba(0,0,0,.15)";
-  } else {
-    header.style.boxShadow = "0 4px 15px rgba(0,0,0,.08)";
-  }
+// Smooth Fade Animation
+const items = document.querySelectorAll("section,.card,img");
+
+const appear = new IntersectionObserver((entries)=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+entry.target.style.opacity="1";
+entry.target.style.transform="translateY(0)";
+}
+});
+});
+
+items.forEach(item=>{
+item.style.opacity="0";
+item.style.transform="translateY(40px)";
+item.style.transition="all .8s ease";
+appear.observe(item);
 });
