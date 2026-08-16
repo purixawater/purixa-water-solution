@@ -104,8 +104,10 @@ function val(id){
 
 function clear(ids){
   ids.forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.value = '';
+    const el=document.getElementById(id);
+    if(el){
+      el.value='';
+    }
   });
 }
 
