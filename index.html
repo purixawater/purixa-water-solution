@@ -97,9 +97,56 @@ window.show=(id,b)=>{document.querySelectorAll('.page').forEach(x=>x.classList.r
 window.signIn=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value)}catch(e){authMsg.textContent=e.message;authMsg.className='status bad'}};
 window.signUp=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value);authMsg.textContent='Account created.';authMsg.className='status ok'}catch(e){authMsg.textContent=e.message;authMsg.className='status bad'}};
 window.signOut=()=>firebaseSignOut(auth);
-function val(id){return document.getElementById(id).value.trim()}
-function clear(ids){ids.forEach(id=>document.getElementById(id).value='')}
+function val(id){
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
 
+function clear(ids){
+  ids.forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+}
+
+window.add=async(type)=>{
+  if(!configured || !auth.currentUser){
+    return alert('Pehle Firebase setup/login karein.');
+  }
+
+  try{
+    const data = dataFrom(type);
+
+    await addDoc(collection(db,type),data);
+
+    // Form safely clear
+    const section = document.getElementById(type);
+
+    if(section){
+      section.querySelectorAll('input, textarea, select').forEach(el=>{
+        if(el.tagName === 'SELECT'){
+          el.selectedIndex = 0;
+        }else{
+          el.value = '';
+        }
+      });
+    }
+
+    await loadAll();
+
+    alert(
+      type === 'customers' ? 'Customer successfully added.' :
+      type === 'leads' ? 'Lead successfully added.' :
+      type === 'services' ? 'Service successfully added.' :
+      type === 'sales' ? 'Sale successfully added.' :
+      'AMC successfully added.'
+    );
+
+  }catch(e){
+    console.error(e);
+    alert('Error: ' + e.message);
+  }
+};
 function dataFrom(type){
  const m={
  customers:{name:val('cname'),mobile:val('cmobile'),product:val('cproduct'),purchase:val('cpurchase'),warranty:val('cwarranty'),address:val('caddress'),notes:val('cnotes')},
@@ -109,8 +156,35 @@ function dataFrom(type){
  amc:{name:val('aname'),mobile:val('amobile'),plan:val('aplan'),start:val('astart'),end:val('aend'),next:val('anext')}
  };return m[type];
 }
-window.add=async(type)=>{if(!configured||!auth.currentUser)return alert('Pehle Firebase setup/login karein.');try{await addDoc(collection(db,type),dataFrom(type));clear([...document.querySelectorAll('#'+type+' input, #'+type+' textarea')].map(x=>x.id));await loadAll()}catch(e){alert(e.message)}};
+window.add=async(type)=>{
+  if(!configured || !auth.currentUser){
+    return alert('Pehle Firebase setup/login karein.');
+  }
 
+  try{
+    await addDoc(collection(db,type),dataFrom(type));
+
+    const section = document.getElementById(type);
+
+    if(section){
+      section.querySelectorAll('input, textarea, select').forEach(el=>{
+        if(el.tagName === 'SELECT'){
+          el.selectedIndex = 0;
+        }else{
+          el.value = '';
+        }
+      });
+    }
+
+    await loadAll();
+
+    alert('Data successfully added.');
+
+  }catch(e){
+    console.error(e);
+    alert('Error: ' + e.message);
+  }
+};
 async function load(type){
  const snap=await getDocs(collection(db,type)); cache[type]=snap.docs.map(d=>({id:d.id,...d.data()}));
 }
