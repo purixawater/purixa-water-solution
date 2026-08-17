@@ -354,38 +354,104 @@ window.waReminder=(m,n,reason)=>{
 window.openCustomer=async(id)=>{
   const c=cache.customers.find(x=>x.id===id);
   if(!c)return;
+
   const services=cache.services.filter(x=>samePerson(x,c));
   const sales=cache.sales.filter(x=>samePerson(x,c));
   const amcs=cache.amc.filter(x=>samePerson(x,c));
 
+  const serviceHtml=services.length
+    ? services.map(x=>`
+      <div class="historyitem">
+        🔧 <b>${esc(x.type||'Service')}</b><br>
+        Date: ${esc(x.date||'-')}<br>
+        Next: ${esc(x.next||'-')}<br>
+        Status: ${esc(x.status||'-')}
+      </div>
+    `).join('')
+    : '<p>No service records.</p>';
+
+  const salesHtml=sales.length
+    ? sales.map(x=>`
+      <div class="historyitem">
+        💰 <b>${esc(x.product||'Sale')}</b><br>
+        Amount: ₹${Number(x.amount||0).toLocaleString('en-IN')}<br>
+        Payment: ${esc(x.payment||'-')}<br>
+        Date: ${esc(x.date||'-')}
+      </div>
+    `).join('')
+    : '<p>No sales records.</p>';
+
+  const amcHtml=amcs.length
+    ? amcs.map(x=>`
+      <div class="historyitem">
+        📋 <b>${esc(x.plan||'AMC')}</b><br>
+        Start: ${esc(x.start||'-')}<br>
+        End: ${esc(x.end||'-')}<br>
+        Next: ${esc(x.next||'-')}
+      </div>
+    `).join('')
+    : '<p>No AMC records.</p>';
+
   const html=`
-  <div class="detailgrid">
-    ${detail('Name',c.name)}
-    ${detail('Mobile',c.mobile)}
-    ${detail('Product',c.product)}
-    ${detail('Purchase Date',c.purchase)}
-    ${detail('Warranty Until',c.warranty)}
-    ${detail('Address',c.address)}
-  </div>
-  <div class="history"><h3>📝 Notes</h3><p>${esc(c.notes||'No notes.')}</p></div>
-  <div class="history"><h3>🔧 Service History</h3>
-    ${services.length?services.map(x=>`<div class="historyitem"><b>${esc(x.type)}</b> — ${esc(x.date||'-')} — Next: ${esc(x.next||'-')} — <span class="badge">${esc(x.status||'-')}</span></div>`).join(''):'<div class="empty">No service records.</div>'}
-  </div>
-  <div class="history"><h3>💰 Sales History</h3>
-    ${sales.length?sales.map(x=>`<div class="historyitem"><b>${esc(x.product||'-')}</b> — ₹${Number(x.amount||0).toLocaleString('en-IN')} — ${esc(x.payment||'-')} — ${esc(x.date||'-')}</div>`).join(''):'<div class="empty">No sales records.</div>'}
-  </div>
-  <div class="history"><h3>🛡️ AMC History</h3>
-    ${amcs.length?amcs.map(x=>`<div class="historyitem"><b>${esc(x.plan||'-')}</b> — End: ${esc(x.end||'-')} — Next: ${esc(x.next||'-')}</div>`).join(''):'<div class="empty">No AMC records.</div>'}
-  </div>
-  <div class="actions">
-    <button class="btn" onclick="editCustomer('${c.id}')">✏️ Edit Customer</button>
-    <button class="btn secondary" onclick="quickService('${c.id}')">🔧 Add Service</button>
-    <button class="btn secondary" onclick="quickSale('${c.id}')">💰 Add Sale</button>
-    <button class="btn secondary" onclick="quickAMC('${c.id}')">🛡️ Add AMC</button>
-    <button class="btn success" onclick="wa('${escAttr(c.mobile)}','${escAttr(c.name)}')">📱 WhatsApp Customer</button>
-  </div>`;
-  document.getElementById('customerDetails').innerHTML=html;
-  document.getElementById('customerModal').classList.add('show');
+    <div class="detailgrid">
+      ${detail('Name',c.name)}
+      ${detail('Mobile',c.mobile)}
+      ${detail('Product',c.product)}
+      ${detail('Purchase Date',c.purchase)}
+      ${detail('Warranty Until',c.warranty)}
+      ${detail('Address',c.address)}
+    </div>
+
+    <div class="history">
+      <h3>📝 Notes</h3>
+      <p>${esc(c.notes||'No notes.')}</p>
+    </div>
+
+    <div class="history">
+      <h3>🔧 Service History</h3>
+      ${serviceHtml}
+    </div>
+
+    <div class="history">
+      <h3>💰 Sales History</h3>
+      ${salesHtml}
+    </div>
+
+    <div class="history">
+      <h3>📋 AMC History</h3>
+      ${amcHtml}
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="editCustomer('${c.id}')">
+        ✏️ Edit Customer
+      </button>
+
+      <button class="btn secondary"
+        onclick="wa('${escAttr(c.mobile)}','${escAttr(c.name)}')">
+        📱 WhatsApp Customer
+      </button>
+
+      <button class="btn success" onclick="quickService('${c.id}')">
+        🔧 Add Service
+      </button>
+
+      <button class="btn warning" onclick="quickSale('${c.id}')">
+        💰 Add Sale
+      </button>
+
+      <button class="btn" onclick="quickAMC('${c.id}')">
+        📋 Add AMC
+      </button>
+    </div>
+  `;
+
+  const modal=document.getElementById('customerModal');
+
+  if(modal){
+    document.getElementById('customerDetails').innerHTML=html;
+    modal.classList.add('show');
+  }
 };
 
 function samePerson(a,c){
@@ -398,8 +464,10 @@ function detail(k,v){return `<div class="detail"><small>${k}</small><b>${esc(v||
 function esc(v){return String(v??'').replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}
 function escAttr(v){return String(v??'').replace(/'/g,"\\'")}
 
-window.closeCustomer=()=>document.getElementById('customerModal').classList.remove('show');
-
+window.closeCustomer=()=>{
+  const modal=document.getElementById('customerModal');
+  if(modal) modal.classList.remove('show');
+};
 window.editCustomer=(id)=>{
   const c=cache.customers.find(x=>x.id===id);
   if(!c)return;
