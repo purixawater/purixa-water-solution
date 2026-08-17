@@ -5,273 +5,45 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Purixa CRM Cloud</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#17324d}
-header{background:linear-gradient(135deg,#087ea4,#12b6c9);color:#fff;padding:18px;position:sticky;top:0;z-index:5}
-header h1{margin:0;font-size:24px}header p{margin:4px 0 0;font-size:13px}
-nav{display:flex;gap:7px;overflow:auto;background:#fff;padding:10px;position:sticky;top:78px;z-index:4;border-bottom:1px solid #ddd}
-nav button{border:0;padding:10px 14px;border-radius:20px;background:#edf4f7;color:#17445c;font-weight:bold;white-space:nowrap}nav button.active{background:#087ea4;color:#fff}
-main{max-width:1100px;margin:auto;padding:15px}.page{display:none}.page.active{display:block}
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.card,.box{background:#fff;border-radius:14px;padding:15px;box-shadow:0 2px 10px #0000000b}.card b{display:block;font-size:26px;margin-top:5px}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.field{display:flex;flex-direction:column;gap:5px}.full{grid-column:1/-1}
-input,select,textarea{padding:11px;border:1px solid #ccd8df;border-radius:9px;font-size:15px}textarea{min-height:70px}
-.btn{border:0;border-radius:9px;padding:10px 14px;background:#087ea4;color:white;font-weight:bold}.secondary{background:#e8f1f5;color:#17445c}.danger{background:#d9534f}
-.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.search{width:100%;padding:11px;margin:10px 0}
-.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:10px;border-bottom:1px solid #e7edf1;text-align:left;font-size:13px}th{background:#eef6f8}
-.login{position:fixed;inset:0;background:linear-gradient(135deg,#087ea4,#12b6c9);display:flex;align-items:center;justify-content:center;z-index:99}.loginbox{background:#fff;width:min(92%,390px);padding:25px;border-radius:18px}
-.status{font-size:12px;margin-top:8px}.ok{color:#087e55}.bad{color:#c0392b}
-@media(min-width:700px){.cards{grid-template-columns:repeat(5,1fr)}.grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:500px){header p{display:none}}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#17324d}header{background:linear-gradient(135deg,#087ea4,#12b6c9);color:#fff;padding:18px;position:sticky;top:0;z-index:5}header h1{margin:0;font-size:24px}header p{margin:4px 0 0;font-size:13px}nav{display:flex;gap:7px;overflow:auto;background:#fff;padding:10px;position:sticky;top:78px;z-index:4;border-bottom:1px solid #ddd}nav button{border:0;padding:10px 14px;border-radius:20px;background:#edf4f7;color:#17445c;font-weight:bold;white-space:nowrap}nav button.active{background:#087ea4;color:#fff}main{max-width:1100px;margin:auto;padding:15px}.page{display:none}.page.active{display:block}.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.card,.box{background:#fff;border-radius:14px;padding:15px;box-shadow:0 2px 10px #0000000b}.card b{display:block;font-size:26px;margin-top:5px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.field{display:flex;flex-direction:column;gap:5px}.full{grid-column:1/-1}input,select,textarea{padding:11px;border:1px solid #ccd8df;border-radius:9px;font-size:15px}textarea{min-height:70px}.btn{border:0;border-radius:9px;padding:10px 14px;background:#087ea4;color:white;font-weight:bold;cursor:pointer}.secondary{background:#e8f1f5;color:#17445c}.danger{background:#d9534f}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.search{width:100%;padding:11px;margin:10px 0;border:1px solid #ccd8df;border-radius:9px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;background:#fff}th,td{padding:10px;border-bottom:1px solid #e7edf1;text-align:left;font-size:13px}th{background:#eef6f8}.login{position:fixed;inset:0;background:linear-gradient(135deg,#087ea4,#12b6c9);display:flex;align-items:center;justify-content:center;z-index:99}.loginbox{background:#fff;width:min(92%,390px);padding:25px;border-radius:18px}.status{font-size:12px;margin-top:8px}.ok{color:#087e55}.bad{color:#c0392b}.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:100;padding:15px}.modal.show{display:flex}.modalbox{background:#fff;width:min(95%,850px);max-height:90vh;overflow:auto;border-radius:16px;padding:20px}.modalhead{display:flex;justify-content:space-between;align-items:center}.detailgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:12px}.detail{background:#f4f7fb;padding:12px;border-radius:10px}.detail small{display:block;color:#667;margin-bottom:4px}@media(min-width:700px){.cards{grid-template-columns:repeat(5,1fr)}.grid{grid-template-columns:repeat(3,1fr)}.detailgrid{grid-template-columns:repeat(3,1fr)}}@media(max-width:500px){header p{display:none}nav{top:63px}.detailgrid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<div class="login" id="loginScreen"><div class="loginbox">
-<h2>💧 Purixa CRM Cloud</h2><p>Admin Login</p>
-<div class="field"><label>Email</label><input id="email" type="email" placeholder="your@email.com"></div>
-<div class="field"><label>Password</label><input id="password" type="password"></div>
-<div class="actions"><button class="btn" onclick="signIn()">Login</button><button class="btn secondary" onclick="signUp()">Create Account</button></div>
-<p class="status" id="authMsg"></p>
-</div></div>
-
+<div class="login" id="loginScreen"><div class="loginbox"><h2>💧 Purixa CRM Cloud</h2><p>Admin Login</p><div class="field"><label>Email</label><input id="email" type="email" placeholder="your@email.com"></div><div class="field"><label>Password</label><input id="password" type="password"></div><div class="actions"><button class="btn" onclick="signIn()">Login</button><button class="btn secondary" onclick="signUp()">Create Account</button></div><p class="status" id="authMsg"></p></div></div>
 <header><h1>💧 Purixa CRM</h1><p>Purixa Water Solution — Cloud Customer & Service Management</p></header>
-<nav>
-<button class="active" onclick="show('dashboard',this)">Dashboard</button>
-<button onclick="show('customers',this)">Customers</button><button onclick="show('leads',this)">Leads</button>
-<button onclick="show('services',this)">Services</button><button onclick="show('sales',this)">Sales</button>
-<button onclick="show('amc',this)">AMC</button><button onclick="show('backup',this)">Backup</button>
-<button onclick="signOut()">Logout</button>
-</nav>
+<nav><button class="active" onclick="show('dashboard',this)">Dashboard</button><button onclick="show('customers',this)">Customers</button><button onclick="show('leads',this)">Leads</button><button onclick="show('services',this)">Services</button><button onclick="show('sales',this)">Sales</button><button onclick="show('amc',this)">AMC</button><button onclick="show('backup',this)">Backup</button><button onclick="signOut()">Logout</button></nav>
 <main>
-<section id="dashboard" class="page active">
-<h2>Dashboard</h2>
-
-<div class="cards">
-<div class="card">Customers<b id="dc">0</b><small>Total customers</small></div>
-<div class="card">Leads<b id="dl">0</b><small>Customer enquiries</small></div>
-<div class="card">Services<b id="ds">0</b><small>Service records</small></div>
-<div class="card">Sales<b id="dsa">0</b><small>Total sales</small></div>
-<div class="card">AMC<b id="damc">0</b><small>AMC customers</small></div>
-</div>
-
-<div class="grid" style="margin-top:15px">
-
-<div class="box">
-<h3>💰 Total Sales</h3>
-<b id="totalSales">₹0</b>
-</div>
-
-<div class="box">
-<h3>⏳ Pending Payment</h3>
-<b id="pendingSales">₹0</b>
-</div>
-
-<div class="box">
-<h3>📅 Follow-ups</h3>
-<b id="upcomingFollowups">0</b>
-</div>
-
-</div>
-
-<div class="box" style="margin-top:15px">
-<h3>⚡ Quick Actions</h3>
-
-<div class="actions">
-
-<button class="btn" onclick="show('customers',document.querySelectorAll('nav button')[1])">
-+ Customer
-</button>
-
-<button class="btn" onclick="show('leads',document.querySelectorAll('nav button')[2])">
-+ Lead
-</button>
-
-<button class="btn" onclick="show('services',document.querySelectorAll('nav button')[3])">
-+ Service
-</button>
-
-<button class="btn" onclick="show('sales',document.querySelectorAll('nav button')[4])">
-+ Sale
-</button>
-
-<button class="btn" onclick="show('amc',document.querySelectorAll('nav button')[5])">
-+ AMC
-</button>
-
-</div>
-</div>
-
-<div class="box" style="margin-top:15px">
-<h3>☁ Cloud Status</h3>
-<p id="cloudStatus">Connecting...</p>
-</div>
-
-<div class="box" style="margin-top:15px">
-<h3>🔔 Reminders & Follow-ups</h3>
-<div id="reminders">Loading...</div>
-</div>
-
-</section>
-<section id="customers" class="page"><h2>Customers</h2><div class="box"><div class="grid">
-<div class="field"><label>Name</label><input id="cname"></div><div class="field"><label>Mobile</label><input id="cmobile"></div><div class="field"><label>Product</label><input id="cproduct"></div><div class="field"><label>Purchase Date</label><input id="cpurchase" type="date"></div><div class="field"><label>Warranty Until</label><input id="cwarranty" type="date"></div><div class="field"><label>Address</label><input id="caddress"></div><div class="field full"><label>Notes</label><textarea id="cnotes"></textarea></div>
-</div><div class="actions"><button class="btn" onclick="add('customers')">+ Add Customer</button></div></div>
-<input class="search" oninput="renderCustomers(this.value)" placeholder="Search customer..."><div class="tablewrap"><table><thead><tr><th>Name</th><th>Mobile</th><th>Product</th><th>Warranty</th><th>Action</th></tr></thead><tbody id="customerRows"></tbody></table></div></section>
-
-<section id="leads" class="page"><h2>Leads</h2><div class="box"><div class="grid">
-<div class="field"><label>Name</label><input id="lname"></div><div class="field"><label>Mobile</label><input id="lmobile"></div><div class="field"><label>Requirement</label><input id="lreq"></div><div class="field"><label>Status</label><select id="lstatus"><option>New</option><option>Follow-up</option><option>Converted</option><option>Lost</option></select></div><div class="field"><label>Follow-up</label><input id="lfollow" type="date"></div>
-</div><div class="actions"><button class="btn" onclick="add('leads')">+ Add Lead</button></div></div><div class="tablewrap"><table><thead><tr><th>Name</th><th>Mobile</th><th>Requirement</th><th>Status</th><th>Follow-up</th><th>Action</th></tr></thead><tbody id="leadRows"></tbody></table></div></section>
-
-<section id="services" class="page"><h2>Services</h2><div class="box"><div class="grid">
-<div class="field"><label>Customer</label><input id="sname"></div><div class="field"><label>Mobile</label><input id="smobile"></div><div class="field"><label>Type</label><select id="stype"><option>Installation</option><option>Repair</option><option>Regular Service</option><option>AMC</option><option>Water Testing</option></select></div><div class="field"><label>Service Date</label><input id="sdate" type="date"></div><div class="field"><label>Next Service</label><input id="snext" type="date"></div><div class="field"><label>Status</label><select id="sstatus"><option>Pending</option><option>Scheduled</option><option>Completed</option></select></div>
-</div><div class="actions"><button class="btn" onclick="add('services')">+ Add Service</button></div></div><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Type</th><th>Date</th><th>Next</th><th>Status</th><th>Action</th></tr></thead><tbody id="serviceRows"></tbody></table></div></section>
-
-<section id="sales" class="page"><h2>Sales</h2><div class="box"><div class="grid">
-<div class="field"><label>Customer</label><input id="saname"></div><div class="field"><label>Mobile</label><input id="samobile"></div><div class="field"><label>Product</label><input id="saproduct"></div><div class="field"><label>Amount ₹</label><input id="saamount" type="number"></div><div class="field"><label>Payment</label><select id="sapayment"><option>Paid</option><option>Pending</option><option>Partial</option></select></div><div class="field"><label>Date</label><input id="sadate" type="date"></div>
-</div><div class="actions"><button class="btn" onclick="add('sales')">+ Add Sale</button></div></div><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Product</th><th>Amount</th><th>Payment</th><th>Date</th><th>Action</th></tr></thead><tbody id="saleRows"></tbody></table></div></section>
-
-<section id="amc" class="page"><h2>AMC</h2><div class="box"><div class="grid">
-<div class="field"><label>Customer</label><input id="aname"></div><div class="field"><label>Mobile</label><input id="amobile"></div><div class="field"><label>Plan</label><select id="aplan"><option>1 Year AMC</option><option>2 Year AMC</option><option>3 Year AMC</option></select></div><div class="field"><label>Start</label><input id="astart" type="date"></div><div class="field"><label>End</label><input id="aend" type="date"></div><div class="field"><label>Next Service</label><input id="anext" type="date"></div>
-</div><div class="actions"><button class="btn" onclick="add('amc')">+ Add AMC</button></div></div><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Plan</th><th>End</th><th>Next</th><th>Action</th></tr></thead><tbody id="amcRows"></tbody></table></div></section>
-
+<section id="dashboard" class="page active"><h2>Dashboard</h2><div class="cards"><div class="card">Customers<b id="dc">0</b><small>Total customers</small></div><div class="card">Leads<b id="dl">0</b><small>Customer enquiries</small></div><div class="card">Services<b id="ds">0</b><small>Service records</small></div><div class="card">Sales<b id="dsa">0</b><small>Total sales</small></div><div class="card">AMC<b id="damc">0</b><small>AMC customers</small></div></div><div class="grid" style="margin-top:15px"><div class="box"><h3>💰 Total Sales</h3><b id="totalSales">₹0</b></div><div class="box"><h3>⏳ Pending Payment</h3><b id="pendingSales">₹0</b></div><div class="box"><h3>📅 Follow-ups</h3><b id="upcomingFollowups">0</b></div></div><div class="box" style="margin-top:15px"><h3>⚡ Quick Actions</h3><div class="actions"><button class="btn" onclick="go('customers',1)">+ Customer</button><button class="btn" onclick="go('leads',2)">+ Lead</button><button class="btn" onclick="go('services',3)">+ Service</button><button class="btn" onclick="go('sales',4)">+ Sale</button><button class="btn" onclick="go('amc',5)">+ AMC</button></div></div><div class="box" style="margin-top:15px"><h3>☁ Cloud Status</h3><p id="cloudStatus">Connecting...</p></div><div class="box" style="margin-top:15px"><h3>🔔 Reminders & Follow-ups</h3><div id="reminders">Loading...</div></div></section>
+<section id="customers" class="page"><h2>Customers</h2><div class="box"><div class="grid"><div class="field"><label>Name</label><input id="cname"></div><div class="field"><label>Mobile</label><input id="cmobile"></div><div class="field"><label>Product</label><input id="cproduct"></div><div class="field"><label>Purchase Date</label><input id="cpurchase" type="date"></div><div class="field"><label>Warranty Until</label><input id="cwarranty" type="date"></div><div class="field"><label>Address</label><input id="caddress"></div><div class="field full"><label>Notes</label><textarea id="cnotes"></textarea></div></div><div class="actions"><button class="btn" onclick="add('customers')">+ Add Customer</button></div></div><input class="search" oninput="renderCustomers(this.value)" placeholder="Search customer..."><div class="tablewrap"><table><thead><tr><th>Name</th><th>Mobile</th><th>Product</th><th>Warranty</th><th>Action</th></tr></thead><tbody id="customerRows"></tbody></table></div></section>
+<section id="leads" class="page"><h2>Leads</h2><div class="box"><div class="grid"><div class="field"><label>Name</label><input id="lname"></div><div class="field"><label>Mobile</label><input id="lmobile"></div><div class="field"><label>Requirement</label><input id="lreq"></div><div class="field"><label>Status</label><select id="lstatus"><option>New</option><option>Follow-up</option><option>Converted</option><option>Lost</option></select></div><div class="field"><label>Follow-up</label><input id="lfollow" type="date"></div></div><div class="actions"><button class="btn" onclick="add('leads')">+ Add Lead</button></div></div><div class="tablewrap"><table><thead><tr><th>Name</th><th>Mobile</th><th>Requirement</th><th>Status</th><th>Follow-up</th><th>Action</th></tr></thead><tbody id="leadRows"></tbody></table></div></section>
+<section id="services" class="page"><h2>Services</h2><div class="box"><div class="grid"><div class="field"><label>Customer</label><input id="sname"></div><div class="field"><label>Mobile</label><input id="smobile"></div><div class="field"><label>Type</label><select id="stype"><option>Installation</option><option>Repair</option><option>Regular Service</option><option>AMC</option><option>Water Testing</option></select></div><div class="field"><label>Service Date</label><input id="sdate" type="date"></div><div class="field"><label>Next Service</label><input id="snext" type="date"></div><div class="field"><label>Status</label><select id="sstatus"><option>Pending</option><option>Scheduled</option><option>Completed</option></select></div></div><div class="actions"><button class="btn" onclick="add('services')">+ Add Service</button></div></div><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Type</th><th>Date</th><th>Next</th><th>Status</th><th>Action</th></tr></thead><tbody id="serviceRows"></tbody></table></div></section>
+<section id="sales" class="page"><h2>Sales</h2><div class="box"><div class="grid"><div class="field"><label>Customer</label><input id="saname"></div><div class="field"><label>Mobile</label><input id="samobile"></div><div class="field"><label>Product</label><input id="saproduct"></div><div class="field"><label>Amount ₹</label><input id="saamount" type="number"></div><div class="field"><label>Payment</label><select id="sapayment"><option>Paid</option><option>Pending</option><option>Partial</option></select></div><div class="field"><label>Date</label><input id="sadate" type="date"></div></div><div class="actions"><button class="btn" onclick="add('sales')">+ Add Sale</button></div></div><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Product</th><th>Amount</th><th>Payment</th><th>Date</th><th>Action</th></tr></thead><tbody id="saleRows"></tbody></table></div></section>
+<section id="amc" class="page"><h2>AMC</h2><div class="box"><div class="grid"><div class="field"><label>Customer</label><input id="aname"></div><div class="field"><label>Mobile</label><input id="amobile"></div><div class="field"><label>Plan</label><select id="aplan"><option>1 Year AMC</option><option>2 Year AMC</option><option>3 Year AMC</option></select></div><div class="field"><label>Start</label><input id="astart" type="date"></div><div class="field"><label>End</label><input id="aend" type="date"></div><div class="field"><label>Next Service</label><input id="anext" type="date"></div></div><div class="actions"><button class="btn" onclick="add('amc')">+ Add AMC</button></div></div><div class="tablewrap"><table><thead><tr><th>Customer</th><th>Plan</th><th>End</th><th>Next</th><th>Action</th></tr></thead><tbody id="amcRows"></tbody></table></div></section>
 <section id="backup" class="page"><h2>Backup</h2><div class="box"><p>Cloud database is the main backup. JSON export is also available.</p><div class="actions"><button class="btn" onclick="exportData()">Download JSON Backup</button><label class="btn secondary">Restore JSON<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label></div></div></section>
 </main>
-
+<div class="modal" id="customerModal"><div class="modalbox"><div class="modalhead"><h2>👤 Customer Details</h2><button class="btn danger" onclick="closeCustomer()">Close</button></div><div id="customerDetails"></div></div></div>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut as firebaseSignOut } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
-
-/* STEP 1: Firebase Console se apna config yahan paste karein. */
-const firebaseConfig = {
-  apiKey: "AIzaSyCZs-P_xbPI4gdXxnaZEqwa38l1Uk82Wa8",
-  authDomain: "purixa-crm.firebaseapp.com",
-  projectId: "purixa-crm",
-  storageBucket: "purixa-crm.firebasestorage.app",
-  messagingSenderId: "674260829971",
-  appId: "1:674260829971:web:f0e7bf85a33f37796abce6",
-  measurementId: "G-L0SMCEX5M4"
-};
-
-const configured = firebaseConfig.apiKey !== "PASTE_API_KEY";
-let app,auth,db;
-if(configured){app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app);}
-else{document.getElementById('cloudStatus').innerHTML='<span class="bad">Firebase setup pending — config paste karna hai.</span>';document.getElementById('loginScreen').style.display='none';}
-
-const types=['customers','leads','services','sales','amc']; let cache={customers:[],leads:[],services:[],sales:[],amc:[]};
-
-window.show=(id,b)=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active')};
-window.signIn=async()=>{try{await signInWithEmailAndPassword(auth,email.value,password.value)}catch(e){authMsg.textContent=e.message;authMsg.className='status bad'}};
-window.signUp=async()=>{try{await createUserWithEmailAndPassword(auth,email.value,password.value);authMsg.textContent='Account created.';authMsg.className='status ok'}catch(e){authMsg.textContent=e.message;authMsg.className='status bad'}};
-window.signOut=()=>firebaseSignOut(auth);
-function val(id){
-  const el = document.getElementById(id);
-  return el ? el.value.trim() : '';
-}
-
-function clear(ids){
-  ids.forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){
-      el.value='';
-    }
-  });
-}
-
-window.add=async(type)=>{
-  if(!configured || !auth.currentUser){
-    return alert('Pehle Firebase setup/login karein.');
-  }
-
-  try{
-    const data = dataFrom(type);
-
-    await addDoc(collection(db,type),data);
-
-    // Form safely clear
-    const section = document.getElementById(type);
-
-    if(section){
-      section.querySelectorAll('input, textarea, select').forEach(el=>{
-        if(el.tagName === 'SELECT'){
-          el.selectedIndex = 0;
-        }else{
-          el.value = '';
-        }
-      });
-    }
-
-    await loadAll();
-
-    alert(
-      type === 'customers' ? 'Customer successfully added.' :
-      type === 'leads' ? 'Lead successfully added.' :
-      type === 'services' ? 'Service successfully added.' :
-      type === 'sales' ? 'Sale successfully added.' :
-      'AMC successfully added.'
-    );
-
-  }catch(e){
-    console.error(e);
-    alert('Error: ' + e.message);
-  }
-};
-function dataFrom(type){
- const m={
- customers:{name:val('cname'),mobile:val('cmobile'),product:val('cproduct'),purchase:val('cpurchase'),warranty:val('cwarranty'),address:val('caddress'),notes:val('cnotes')},
- leads:{name:val('lname'),mobile:val('lmobile'),req:val('lreq'),status:val('lstatus'),follow:val('lfollow')},
- services:{name:val('sname'),mobile:val('smobile'),type:val('stype'),date:val('sdate'),next:val('snext'),status:val('sstatus')},
- sales:{name:val('saname'),mobile:val('samobile'),product:val('saproduct'),amount:Number(val('saamount')||0),payment:val('sapayment'),date:val('sadate')},
- amc:{name:val('aname'),mobile:val('amobile'),plan:val('aplan'),start:val('astart'),end:val('aend'),next:val('anext')}
- };return m[type];
-}
-window.add=async(type)=>{
-  if(!configured || !auth.currentUser){
-    return alert('Pehle Firebase setup/login karein.');
-  }
-
-  try{
-    await addDoc(collection(db,type),dataFrom(type));
-
-    const section = document.getElementById(type);
-
-    if(section){
-      section.querySelectorAll('input, textarea, select').forEach(el=>{
-        if(el.tagName === 'SELECT'){
-          el.selectedIndex = 0;
-        }else{
-          el.value = '';
-        }
-      });
-    }
-
-    await loadAll();
-
-    alert('Data successfully added.');
-
-  }catch(e){
-    console.error(e);
-    alert('Error: ' + e.message);
-  }
-};
-async function load(type){
- const snap=await getDocs(collection(db,type)); cache[type]=snap.docs.map(d=>({id:d.id,...d.data()}));
-}
-async function loadAll(){for(const t of types)await load(t);render();document.getElementById('cloudStatus').innerHTML='<span class="ok">✓ Cloud database connected</span>'}
-window.del=async(type,id)=>{if(confirm('Delete karna hai?')){await deleteDoc(doc(db,type,id));await loadAll()}};
-window.wa=(m,n)=>{let x=m.replace(/\D/g,'');if(x.length===10)x='91'+x;location.href='https://wa.me/'+x+'?text='+encodeURIComponent('Namaste '+n+', Purixa Water Solution se follow-up ke liye message.')};
-
-function renderCustomers(q=''){let a=cache.customers.filter(x=>(x.name+x.mobile+x.product).toLowerCase().includes(q.toLowerCase()));customerRows.innerHTML=a.map(x=>`<tr><td>${x.name}</td><td>${x.mobile}</td><td>${x.product||'-'}</td><td>${x.warranty||'-'}</td><td><button class="btn secondary" onclick="wa('${x.mobile}','${x.name}')">WA</button> <button class="btn danger" onclick="del('customers','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="5">No customers</td></tr>'}
-window.renderCustomers=renderCustomers;
-function render(){
- dc.textContent=cache.customers.length;dl.textContent=cache.leads.length;ds.textContent=cache.services.length;dsa.textContent=cache.sales.length;damc.textContent=cache.amc.length;renderCustomers();
- leadRows.innerHTML=cache.leads.map(x=>`<tr><td>${x.name}</td><td>${x.mobile}</td><td>${x.req||'-'}</td><td>${x.status}</td><td>${x.follow||'-'}</td><td><button class="btn secondary" onclick="wa('${x.mobile}','${x.name}')">WA</button> <button class="btn danger" onclick="del('leads','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="6">No leads</td></tr>';
- serviceRows.innerHTML=cache.services.map(x=>`<tr><td>${x.name}</td><td>${x.type}</td><td>${x.date||'-'}</td><td>${x.next||'-'}</td><td>${x.status}</td><td><button class="btn danger" onclick="del('services','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="6">No services</td></tr>';
- saleRows.innerHTML=cache.sales.map(x=>`<tr><td>${x.name}</td><td>${x.product||'-'}</td><td>₹${x.amount||0}</td><td>${x.payment}</td><td>${x.date||'-'}</td><td><button class="btn danger" onclick="del('sales','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="6">No sales</td></tr>';
- amcRows.innerHTML=cache.amc.map(x=>`<tr><td>${x.name}</td><td>${x.plan}</td><td>${x.end||'-'}</td><td>${x.next||'-'}</td><td><button class="btn secondary" onclick="wa('${x.mobile}','${x.name}')">WA</button> <button class="btn danger" onclick="del('amc','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="5">No AMC</td></tr>';
- let r=[];[...cache.services,...cache.amc].forEach(x=>{if(x.next)r.push(`${x.name} — next service: ${x.next}`)});reminders.innerHTML=r.length?r.map(x=>`<div style="padding:6px;border-bottom:1px solid #eee">${x}</div>`).join(''):'No reminders';
-}
-window.exportData=()=>{const b=new Blob([JSON.stringify(cache,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Purixa_CRM_Cloud_Backup.json';a.click()};
-window.importData=()=>alert('Cloud restore ke liye Firebase Console ya CSV import workflow add karna hoga.');
-
-if(configured){
- onAuthStateChanged(auth,async user=>{if(user){loginScreen.style.display='none';await loadAll()}else loginScreen.style.display='flex'});
-}
-</script>
-</body></html>
+import{initializeApp}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut as firebaseSignOut}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import{getFirestore,collection,addDoc,getDocs,deleteDoc,doc}from"https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+const firebaseConfig={apiKey:"AIzaSyCZs-P_xbPI4gdXxnaZEqwa38l1Uk82Wa8",authDomain:"purixa-crm.firebaseapp.com",projectId:"purixa-crm",storageBucket:"purixa-crm.firebasestorage.app",messagingSenderId:"674260829971",appId:"1:674260829971:web:f0e7bf85a33f37796abce6",measurementId:"G-L0SMCEX5M4"};
+const configured=firebaseConfig.apiKey!=="PASTE_API_KEY";let app,auth,db;if(configured){app=initializeApp(firebaseConfig);auth=getAuth(app);db=getFirestore(app)}
+const types=['customers','leads','services','sales','amc'];let cache={customers:[],leads:[],services:[],sales:[],amc:[]};
+const el=id=>document.getElementById(id);const val=id=>el(id)?.value.trim()||'';
+const dataFrom=t=>({customers:{name:val('cname'),mobile:val('cmobile'),product:val('cproduct'),purchase:val('cpurchase'),warranty:val('cwarranty'),address:val('caddress'),notes:val('cnotes')},leads:{name:val('lname'),mobile:val('lmobile'),req:val('lreq'),status:val('lstatus'),follow:val('lfollow')},services:{name:val('sname'),mobile:val('smobile'),type:val('stype'),date:val('sdate'),next:val('snext'),status:val('sstatus')},sales:{name:val('saname'),mobile:val('samobile'),product:val('saproduct'),amount:Number(val('saamount')||0),payment:val('sapayment'),date:val('sadate')},amc:{name:val('aname'),mobile:val('amobile'),plan:val('aplan'),start:val('astart'),end:val('aend'),next:val('anext')}}[t]);
+function clearSection(t){el(t)?.querySelectorAll('input,textarea,select').forEach(x=>x.tagName==='SELECT'?x.selectedIndex=0:x.value='')}
+window.show=(id,b)=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));el(id)?.classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));if(b)b.classList.add('active')};window.go=(id,i)=>show(id,document.querySelectorAll('nav button')[i]);
+window.signIn=async()=>{try{await signInWithEmailAndPassword(auth,val('email'),val('password'))}catch(e){el('authMsg').textContent=e.message;el('authMsg').className='status bad'}};
+window.signUp=async()=>{try{await createUserWithEmailAndPassword(auth,val('email'),val('password'));el('authMsg').textContent='Account created successfully.';el('authMsg').className='status ok'}catch(e){el('authMsg').textContent=e.message;el('authMsg').className='status bad'}};window.signOut=()=>firebaseSignOut(auth);
+window.add=async t=>{if(!configured||!auth.currentUser)return alert('Pehle Firebase setup/login karein.');try{await addDoc(collection(db,t),dataFrom(t));clearSection(t);await loadAll();alert('Data successfully added.')}catch(e){console.error(e);alert('Error: '+e.message)}};
+async function load(t){const s=await getDocs(collection(db,t));cache[t]=s.docs.map(d=>({id:d.id,...d.data()}))}async function loadAll(){for(const t of types)await load(t);render();el('cloudStatus').innerHTML='<span class="ok">✓ Cloud database connected</span>'}
+window.del=async(t,id)=>{if(!confirm('Delete karna hai?'))return;try{await deleteDoc(doc(db,t,id));await loadAll()}catch(e){alert('Delete error: '+e.message)}};
+window.wa=(m,n)=>{let x=String(m||'').replace(/\D/g,'');if(x.length===10)x='91'+x;if(x.length<12)return alert('Mobile number invalid.');location.href='https://wa.me/'+x+'?text='+encodeURIComponent('Namaste '+(n||'Customer')+', Purixa Water Solution se follow-up ke liye message.')};
+function safe(v){return String(v??'-').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')};function attr(v){return String(v??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function renderCustomers(q=''){let s=String(q).toLowerCase();let a=cache.customers.filter(x=>((x.name||'')+(x.mobile||'')+(x.product||'')).toLowerCase().includes(s));el('customerRows').innerHTML=a.map(x=>`<tr><td>${safe(x.name)}</td><td>${safe(x.mobile)}</td><td>${safe(x.product||'-')}</td><td>${safe(x.warranty||'-')}</td><td><button class="btn" onclick="viewCustomer('${x.id}')">View</button> <button class="btn secondary" onclick="wa('${attr(x.mobile)}','${attr(x.name)}')">WA</button> <button class="btn danger" onclick="del('customers','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="5">No customers</td></tr>'}window.renderCustomers=renderCustomers;
+window.viewCustomer=id=>{let x=cache.customers.find(c=>c.id===id);if(!x)return alert('Customer not found.');let match=(a)=>a.filter(z=>(z.name||'').toLowerCase()===(x.name||'').toLowerCase()||(z.mobile||'')===(x.mobile||''));let sv=match(cache.services),sa=match(cache.sales),am=match(cache.amc);el('customerDetails').innerHTML=`<div class="detailgrid"><div class="detail"><small>Name</small><b>${safe(x.name||'-')}</b></div><div class="detail"><small>Mobile</small><b>${safe(x.mobile||'-')}</b></div><div class="detail"><small>Product</small><b>${safe(x.product||'-')}</b></div><div class="detail"><small>Purchase Date</small><b>${safe(x.purchase||'-')}</b></div><div class="detail"><small>Warranty Until</small><b>${safe(x.warranty||'-')}</b></div><div class="detail"><small>Address</small><b>${safe(x.address||'-')}</b></div></div><div class="box" style="margin-top:15px"><h3>📝 Notes</h3><p>${safe(x.notes||'No notes')}</p></div><div class="box" style="margin-top:15px"><h3>🔧 Service History</h3>${sv.length?sv.map(s=>`<div style="padding:8px;border-bottom:1px solid #eee">${safe(s.type||'-')} — ${safe(s.date||'-')} — Next: ${safe(s.next||'-')} — ${safe(s.status||'-')}</div>`).join(''):'<p>No service records.</p>'}</div><div class="box" style="margin-top:15px"><h3>💰 Sales History</h3>${sa.length?sa.map(s=>`<div style="padding:8px;border-bottom:1px solid #eee">${safe(s.product||'-')} — ₹${Number(s.amount||0).toLocaleString('en-IN')} — ${safe(s.payment||'-')} — ${safe(s.date||'-')}</div>`).join(''):'<p>No sales records.</p>'}</div><div class="box" style="margin-top:15px"><h3>📋 AMC History</h3>${am.length?am.map(a=>`<div style="padding:8px;border-bottom:1px solid #eee">${safe(a.plan||'-')} — End: ${safe(a.end||'-')} — Next: ${safe(a.next||'-')}</div>`).join(''):'<p>No AMC records.</p>'}</div><div class="actions"><button class="btn" onclick="wa('${attr(x.mobile)}','${attr(x.name)}')">📱 WhatsApp Customer</button></div>`;el('customerModal').classList.add('show')};window.closeCustomer=()=>el('customerModal').classList.remove('show');
+function upcoming(d){if(!d)return false;let t=new Date();t.setHours(0,0,0,0);let x=new Date(d+'T00:00:00'),f=new Date(t);f.setDate(f.getDate()+30);return x>=t&&x<=f}
+function render(){el('dc').textContent=cache.customers.length;el('dl').textContent=cache.leads.length;el('ds').textContent=cache.services.length;el('dsa').textContent=cache.sales.length;el('damc').textContent=cache.amc.length;let total=cache.sales.reduce((a,x)=>a+Number(x.amount||0),0),pending=cache.sales.filter(x=>x.payment==='Pending'||x.payment==='Partial').reduce((a,x)=>a+Number(x.amount||0),0);el('totalSales').textContent='₹'+total.toLocaleString('en-IN');el('pendingSales').textContent='₹'+pending.toLocaleString('en-IN');renderCustomers();el('leadRows').innerHTML=cache.leads.map(x=>`<tr><td>${safe(x.name)}</td><td>${safe(x.mobile)}</td><td>${safe(x.req||'-')}</td><td>${safe(x.status||'-')}</td><td>${safe(x.follow||'-')}</td><td><button class="btn secondary" onclick="wa('${attr(x.mobile)}','${attr(x.name)}')">WA</button> <button class="btn danger" onclick="del('leads','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="6">No leads</td></tr>';el('serviceRows').innerHTML=cache.services.map(x=>`<tr><td>${safe(x.name)}</td><td>${safe(x.type||'-')}</td><td>${safe(x.date||'-')}</td><td>${safe(x.next||'-')}</td><td>${safe(x.status||'-')}</td><td><button class="btn danger" onclick="del('services','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="6">No services</td></tr>';el('saleRows').innerHTML=cache.sales.map(x=>`<tr><td>${safe(x.name)}</td><td>${safe(x.product||'-')}</td><td>₹${Number(x.amount||0).toLocaleString('en-IN')}</td><td>${safe(x.payment||'-')}</td><td>${safe(x.date||'-')}</td><td><button class="btn danger" onclick="del('sales','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="6">No sales</td></tr>';el('amcRows').innerHTML=cache.amc.map(x=>`<tr><td>${safe(x.name)}</td><td>${safe(x.plan||'-')}</td><td>${safe(x.end||'-')}</td><td>${safe(x.next||'-')}</td><td><button class="btn secondary" onclick="wa('${attr(x.mobile)}','${attr(x.name)}')">WA</button> <button class="btn danger" onclick="del('amc','${x.id}')">X</button></td></tr>`).join('')||'<tr><td colspan="5">No AMC</td></tr>';let r=[];cache.leads.forEach(x=>{if(upcoming(x.follow))r.push('📞 Lead follow-up: '+(x.name||'Customer')+' — '+x.follow)});[...cache.services,...cache.amc].forEach(x=>{if(upcoming(x.next))r.push('🔧 Next service: '+(x.name||'Customer')+' — '+x.next)});el('upcomingFollowups').textContent=r.length;el('reminders').innerHTML=r.length?r.map(x=>`<div style="padding:8px;border-bottom:1px solid #eee">${safe(x)}</div>`).join(''):'No upcoming follow-ups in next 30 days.'}
+window.exportData=()=>{let b=new Blob([JSON.stringify(cache,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Purixa_CRM_Cloud_Backup.json';a.click()};window.importData=()=>alert('Cloud restore ke liye separate import workflow add karna hoga.');
+if(configured){onAuthStateChanged(auth,async user=>{if(user){el('loginScreen').style.display='none';try{await loadAll()}catch(e){el('cloudStatus').innerHTML='<span class="bad">Cloud database error: '+safe(e.message)+'</span>'}}else el('loginScreen').style.display='flex'})}else{el('loginScreen').style.display='none';el('cloudStatus').innerHTML='<span class="bad">Firebase setup pending.</span>'}
+</script></body></html>
