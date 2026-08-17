@@ -40,12 +40,75 @@ input,select,textarea{padding:11px;border:1px solid #ccd8df;border-radius:9px;fo
 <button onclick="signOut()">Logout</button>
 </nav>
 <main>
-<section id="dashboard" class="page active"><h2>Dashboard</h2>
-<div class="cards"><div class="card">Customers<b id="dc">0</b></div><div class="card">Leads<b id="dl">0</b></div><div class="card">Services<b id="ds">0</b></div><div class="card">Sales<b id="dsa">0</b></div><div class="card">AMC<b id="damc">0</b></div></div>
-<div class="box" style="margin-top:15px"><h3>☁ Cloud Status</h3><p id="cloudStatus">Connecting...</p></div>
-<div class="box" style="margin-top:15px"><h3>🔔 Reminders</h3><div id="reminders">Loading...</div></div>
-</section>
+<section id="dashboard" class="page active">
+<h2>Dashboard</h2>
 
+<div class="cards">
+<div class="card">Customers<b id="dc">0</b><small>Total customers</small></div>
+<div class="card">Leads<b id="dl">0</b><small>Customer enquiries</small></div>
+<div class="card">Services<b id="ds">0</b><small>Service records</small></div>
+<div class="card">Sales<b id="dsa">0</b><small>Total sales</small></div>
+<div class="card">AMC<b id="damc">0</b><small>AMC customers</small></div>
+</div>
+
+<div class="grid" style="margin-top:15px">
+
+<div class="box">
+<h3>💰 Total Sales</h3>
+<b id="totalSales">₹0</b>
+</div>
+
+<div class="box">
+<h3>⏳ Pending Payment</h3>
+<b id="pendingSales">₹0</b>
+</div>
+
+<div class="box">
+<h3>📅 Follow-ups</h3>
+<b id="upcomingFollowups">0</b>
+</div>
+
+</div>
+
+<div class="box" style="margin-top:15px">
+<h3>⚡ Quick Actions</h3>
+
+<div class="actions">
+
+<button class="btn" onclick="show('customers',document.querySelectorAll('nav button')[1])">
++ Customer
+</button>
+
+<button class="btn" onclick="show('leads',document.querySelectorAll('nav button')[2])">
++ Lead
+</button>
+
+<button class="btn" onclick="show('services',document.querySelectorAll('nav button')[3])">
++ Service
+</button>
+
+<button class="btn" onclick="show('sales',document.querySelectorAll('nav button')[4])">
++ Sale
+</button>
+
+<button class="btn" onclick="show('amc',document.querySelectorAll('nav button')[5])">
++ AMC
+</button>
+
+</div>
+</div>
+
+<div class="box" style="margin-top:15px">
+<h3>☁ Cloud Status</h3>
+<p id="cloudStatus">Connecting...</p>
+</div>
+
+<div class="box" style="margin-top:15px">
+<h3>🔔 Reminders & Follow-ups</h3>
+<div id="reminders">Loading...</div>
+</div>
+
+</section>
 <section id="customers" class="page"><h2>Customers</h2><div class="box"><div class="grid">
 <div class="field"><label>Name</label><input id="cname"></div><div class="field"><label>Mobile</label><input id="cmobile"></div><div class="field"><label>Product</label><input id="cproduct"></div><div class="field"><label>Purchase Date</label><input id="cpurchase" type="date"></div><div class="field"><label>Warranty Until</label><input id="cwarranty" type="date"></div><div class="field"><label>Address</label><input id="caddress"></div><div class="field full"><label>Notes</label><textarea id="cnotes"></textarea></div>
 </div><div class="actions"><button class="btn" onclick="add('customers')">+ Add Customer</button></div></div>
