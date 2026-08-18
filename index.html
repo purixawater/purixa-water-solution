@@ -133,7 +133,17 @@ th{background:#eef6f8}
 </div>
 <div class="actions"><button class="btn" onclick="add('customers')">+ Add Customer</button></div>
 </div>
-<input class="search" oninput="renderCustomers(this.value)" placeholder="Search customer...">
+<div class="grid" style="margin-top:10px">
+  <input class="search" id="customerSearch"
+    oninput="renderCustomers()"
+    placeholder="🔎 Search name, mobile, product, address...">
+
+  <select id="warrantyFilter" onchange="renderCustomers()">
+    <option value="all">All Customers</option>
+    <option value="active">Warranty Active</option>
+    <option value="expired">Warranty Expired</option>
+  </select>
+</div>
 <div class="tablewrap"><table>
 <thead><tr><th>Name</th><th>Mobile</th><th>Product</th><th>Warranty</th><th>Action</th></tr></thead>
 <tbody id="customerRows"></tbody>
@@ -529,20 +539,86 @@ window.quickAMC=(id)=>{
 
 function today(){return new Date().toISOString().slice(0,10)}
 
-function renderCustomers(q=''){
-  let a=cache.customers.filter(x=>(x.name+' '+x.mobile+' '+x.product).toLowerCase().includes(q.toLowerCase()));
-  customerRows.innerHTML=a.map(x=>`
-  <tr>
-    <td>${esc(x.name)}</td><td>${esc(x.mobile)}</td><td>${esc(x.product||'-')}</td><td>${esc(x.warranty||'-')}</td>
-    <td>
-      <button class="btn" onclick="openCustomer('${x.id}')">View</button>
-      <button class="btn secondary" onclick="wa('${escAttr(x.mobile)}','${escAttr(x.name)}')">WA</button>
-      <button class="btn danger" onclick="del('customers','${x.id}')">X</button>
-    </td>
-  </tr>`).join('')||'<tr><td colspan="5">No customers</td></tr>';
-}
-window.renderCustomers=renderCustomers;
+function renderCustomers(){
+  const q=(document.getElementById('customerSearch')?.value||'')
+    .trim()
+    .toLowerCase();
 
+  const filter=document.getElementById('warrantyFilter')?.value||'all';
+  const todayDate=today();
+
+  let a=cache.customers.filter(x=>{
+    const text=[
+      x.name,
+      x.mobile,
+      x.product,
+      x.address
+    ].join(' ').toLowerCase();
+
+    if(q && !text.includes(q)) return false;
+
+    if(filter==='active'){
+      if(!x.warranty || x.warranty < todayDate) return false;
+    }
+
+    if(filter==='expired'){
+      if(!x.warranty || x.warranty >= todayDate) return false;
+    }
+
+    return true;
+  });
+
+  customerRows.innerHTML=a.map(x=>{
+
+    let warrantyText=x.warranty||'-';
+    let warrantyClass='';
+
+    if(x.warranty){
+      if(x.warranty >= todayDate){
+        warrantyClass='ok';
+      }else{
+        warrantyClass='bad';
+      }
+    }
+
+    return `
+    <tr>
+      <td><b>${esc(x.name)}</b></td>
+
+      <td>${esc(x.mobile)}</td>
+
+      <td>${esc(x.product||'-')}</td>
+
+      <td class="${warrantyClass}">
+        ${esc(warrantyText)}
+      </td>
+
+      <td>
+        <div class="actions">
+
+          <button class="btn"
+            onclick="openCustomer('${x.id}')">
+            👁️ View
+          </button>
+
+          <button class="btn secondary"
+            onclick="wa('${escAttr(x.mobile)}','${escAttr(x.name)}')">
+            📱 WA
+          </button>
+
+          <button class="btn danger"
+            onclick="del('customers','${x.id}')">
+            X
+          </button>
+
+        </div>
+      </td>
+    </tr>`;
+  }).join('') ||
+  '<tr><td colspan="5" class="empty">No customers found.</td></tr>';
+}
+
+window.renderCustomers=renderCustomers;
 function render(){
   dc.textContent=cache.customers.length;
   dl.textContent=cache.leads.length;
