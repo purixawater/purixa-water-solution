@@ -62,7 +62,7 @@ th{background:#f8fafc;color:#53677d}
 .invoice .totals{margin-left:auto;max-width:320px}.invoice .totals div{display:flex;justify-content:space-between;padding:5px}
 </style>
 
-</head>
+<style>.service-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin:10px 0;background:#fff}.service-card .row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.mini{font-size:12px;opacity:.7}</style></head>
 <body>
 <div class="app">
 <aside class="sidebar">
@@ -129,12 +129,7 @@ th{background:#f8fafc;color:#53677d}
     </div>
   </section>
 
-  <section id="service" class="page">
-    <div class="panel">
-      <div class="toolbar"><input class="search" id="serviceSearch" placeholder="Search service..." oninput="renderService()"><button class="btn primary" onclick="openModal('serviceModal')">＋ New Service</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Date</th><th>Customer</th><th>Problem</th><th>Technician</th><th>Status</th><th>Actions</th></tr></thead><tbody id="serviceTable"></tbody></table></div>
-    </div>
-  </section>
+  <section id="service"><div class="page-head"><div><h2>Service Management</h2><p>Purixa Water Solution — Service Requests & History</p></div><button class="btn primary" onclick="openServiceModal()">+ New Service</button></div><div class="card"><input placeholder="Search customer or service..." oninput="renderServices()"><div id="serviceList"></div></div></section>
 
   <section id="amc" class="page">
     <div class="panel">
@@ -581,6 +576,39 @@ function salePaymentStatus(s){
 }
 function updateSalesBalances(){
   (db.sales||[]).forEach(s=>{s.paid=Number(s.paid||0);s.pending=Math.max(0,Number(s.total||0)-s.paid);s.paymentStatus=salePaymentStatus(s);});
+}
+
+
+function ensureServiceData(){db.services=db.services||[];db.technicians=db.technicians||[]}
+function fillServiceCustomerOptions(){
+ const s=document.getElementById("svcCustomer"); if(!s)return;
+ s.innerHTML=(db.customers||[]).map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile||"")}</option>`).join("");
+ const t=document.getElementById("svcTechnician"); if(t)t.innerHTML='<option value="">Unassigned</option>'+(db.technicians||[]).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
+ const d=document.getElementById("svcDate"); if(d&&!d.value)d.value=today;
+}
+function openServiceModal(customerId){
+ ensureServiceData(); fillServiceCustomerOptions();
+ if(customerId){const s=document.getElementById("svcCustomer");if(s)s.value=customerId}
+ openModal("serviceModal");
+}
+function saveServiceRequest(){
+ ensureServiceData();
+ const cid=Number(document.getElementById("svcCustomer").value), c=db.customers.find(x=>x.id===cid);
+ if(!c){toast("Please select a customer");return}
+ db.services.unshift({id:Date.now(),customerId:cid,date:document.getElementById("svcDate").value||today,type:document.getElementById("svcType").value,technicianId:Number(document.getElementById("svcTechnician").value)||null,status:document.getElementById("svcStatus").value,charge:Number(document.getElementById("svcCharge").value)||0,notes:document.getElementById("svcNotes").value.trim()});
+ persist();closeModal("serviceModal");renderServices();toast("Service request saved");
+}
+function renderServices(){
+ const box=document.getElementById("serviceList")||document.getElementById("serviceTable");if(!box)return;
+ const arr=db.services||[];
+ if(!arr.length){box.innerHTML='<div class="empty">No service requests yet.</div>';return}
+ box.innerHTML=arr.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};const t=db.technicians.find(x=>x.id===s.technicianId)||{};
+ return `<div class="service-card"><div class="row"><div><b>${esc(c.name||"-")}</b><div class="mini">${esc(c.mobile||"")} • ${esc(s.type||"Service")}</div></div><b>${esc(s.status||"Open")}</b></div><div class="mini">📅 ${esc(s.date||"-")} • 👨‍🔧 ${esc(t.name||"Unassigned")} • 💰 ${money(s.charge||0)}</div><div class="toolbar"><button class="btn" onclick="viewService(${s.id})">View</button></div></div>`}).join("");
+}
+function viewService(id){
+ const s=(db.services||[]).find(x=>x.id===id);if(!s)return;const c=db.customers.find(x=>x.id===s.customerId)||{};const t=db.technicians.find(x=>x.id===s.technicianId)||{};
+ document.getElementById("serviceDetail").innerHTML=`<div class="service-card"><h3>${esc(c.name||"-")}</h3><p><b>Mobile:</b> ${esc(c.mobile||"-")}</p><p><b>Date:</b> ${esc(s.date||"-")}</p><p><b>Type:</b> ${esc(s.type||"-")}</p><p><b>Technician:</b> ${esc(t.name||"Unassigned")}</p><p><b>Status:</b> ${esc(s.status||"-")}</p><p><b>Charge:</b> ${money(s.charge||0)}</p><p><b>Details:</b> ${esc(s.notes||"-")}</p></div>`;
+ openModal("serviceDetailModal");
 }
 
 </script>
