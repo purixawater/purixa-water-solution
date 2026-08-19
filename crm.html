@@ -245,6 +245,24 @@ th{background:#f8fafc;color:#53677d}
 </div></div>
 
 
+
+<div class="modal" id="editCustomerModal"><div class="modal-box">
+<div class="modal-head"><h3>Edit Customer</h3><button class="close" onclick="closeModal('editCustomerModal')">×</button></div>
+<div class="form-grid">
+<div class="field"><label>Name</label><input id="editCustName"></div>
+<div class="field"><label>Mobile</label><input id="editCustMobile" type="tel"></div>
+<div class="field"><label>Product</label><input id="editCustProduct"></div>
+<div class="field"><label>Purchase Date</label><input id="editCustPurchase" type="date"></div>
+<div class="field"><label>Installation Date</label><input id="editCustInstall" type="date"></div>
+<div class="field"><label>Installation Status</label><select id="editCustInstallStatus"><option>Pending</option><option>Scheduled</option><option>Completed</option></select></div>
+<div class="field"><label>Next Service Date</label><input id="editCustNextService" type="date"></div>
+<div class="field"><label>AMC End Date</label><input id="editCustAMC" type="date"></div>
+<div class="field full"><label>Address</label><textarea id="editCustAddress" rows="3"></textarea></div>
+<div class="field full"><label>Notes</label><textarea id="editCustNotes" rows="3"></textarea></div>
+</div>
+<div class="toolbar"><button class="btn primary" onclick="saveCustomerEdit()">💾 Save Changes</button></div>
+</div></div>
+
 <!-- Customer Profile Modal -->
 <div class="modal" id="customerProfileModal"><div class="modal-box" style="width:min(900px,100%)">
 <div class="modal-head">
@@ -286,6 +304,39 @@ function wa(n,msg="Hello, Purixa Water Solution"){if(n)window.open("https://wa.m
 function statusBadge(s){let c=["Completed","Won","Available","Paid"].includes(s)?"green":["Open","New","Assigned","Interested","Quotation"].includes(s)?"orange":["Lost","Cancelled","Off Duty"].includes(s)?"red":"";return `<span class="badge ${c}">${esc(s)}</span>`}
 
 
+
+let editingCustomerId=null;
+function editCustomer(id){
+  const c=db.customers.find(x=>x.id===id); if(!c)return;
+  editingCustomerId=id;
+  editCustName.value=c.name||"";
+  editCustMobile.value=c.mobile||"";
+  editCustProduct.value=c.product||"";
+  editCustPurchase.value=c.purchase||"";
+  editCustInstall.value=c.install||"";
+  editCustInstallStatus.value=c.installStatus||"Pending";
+  editCustNextService.value=c.nextService||"";
+  editCustAMC.value=c.amc||"";
+  editCustAddress.value=c.address||"";
+  editCustNotes.value=c.notes||"";
+  openModal("editCustomerModal");
+}
+function saveCustomerEdit(){
+  const c=db.customers.find(x=>x.id===editingCustomerId); if(!c)return;
+  const mobile=editCustMobile.value.trim();
+  if(!editCustName.value.trim()||!mobile){toast("Name and mobile are required");return}
+  const duplicate=db.customers.some(x=>x.id!==editingCustomerId&&x.mobile===mobile);
+  if(duplicate){toast("Another customer already uses this mobile");return}
+  Object.assign(c,{
+    name:editCustName.value.trim(),mobile,
+    product:editCustProduct.value.trim(),purchase:editCustPurchase.value,
+    install:editCustInstall.value,installStatus:editCustInstallStatus.value,
+    nextService:editCustNextService.value,amc:editCustAMC.value,
+    address:editCustAddress.value.trim(),notes:editCustNotes.value.trim()
+  });
+  persist(); closeModal("editCustomerModal"); renderAll(); toast("Customer updated");
+}
+
 function openCustomerProfile(id){
   const c=db.customers.find(x=>x.id===id);
   if(!c) return;
@@ -319,7 +370,7 @@ function openCustomerProfile(id){
         <p><b>Purchase:</b> ${esc(c.purchase||"-")}</p>
         <p><b>Installation:</b> ${esc(c.install||"-")}</p>
         <p><b>AMC End:</b> ${esc(c.amc||"-")}</p>
-        <p><b>Address:</b> ${esc(c.address||"-")}</p>
+        <p><b>Address:</b> ${esc(c.address||"-")}</p><p><b>Notes:</b> ${esc(c.notes||"-")}</p>
       </div>
       <div class="panel">
         <h3>🧭 Customer Lifecycle</h3>
@@ -399,7 +450,7 @@ function renderReminders(){
   items.sort((a,b)=>a.days-b.days);
   const box=document.getElementById("reminderList");
   if(!box) return;
-  box.innerHTML=items.length ? `<div class="table-wrap"><table><thead><tr><th>Type</th><th>Customer</th><th>Date</th><th>When</th><th>Action</th></tr></thead><tbody>${items.map((x,i)=>`<tr><td>${statusBadge(x.type)}</td><td><b>${esc(x.customer)}</b><div class="mini">${esc(x.mobile||"-")}</div></td><td>${esc(x.date)}</td><td>${x.days<0?Math.abs(x.days)+" days overdue":x.days===0?"Due today":x.days+" days left"}</td><td><button class="btn" onclick="wa('${esc(x.mobile)}','${esc(x.message)}')">💬 WhatsApp</button> <button class="btn" onclick="callNo('${esc(x.mobile)}')">📞 Call</button></td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No service, follow-up or AMC reminders in the next 30 days.</div>';
+  box.innerHTML=items.length ? `<div class="table-wrap"><table><thead><tr><th>Type</th><th>Customer</th><th>Date</th><th>When</th><th>Action</th></tr></thead><tbody>${items.map((x,i)=>`<tr><td>${statusBadge(x.type)}</td><td><b>${esc(x.customer)}</b><div class="mini">${esc(x.mobile||"-")}</div></td><td>${esc(x.date)}</td><td>${x.days<0?Math.abs(x.days)+" days overdue":x.days===0?"Due today":x.days===7?"7 days left":x.days===15?"15 days left":x.days===30?"30 days left":x.days+" days left"}</td><td><button class="btn" onclick="wa('${esc(x.mobile)}','${esc(x.message)}')">💬 WhatsApp</button> <button class="btn" onclick="callNo('${esc(x.mobile)}')">📞 Call</button></td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No service, follow-up or AMC reminders in the next 30 days.</div>';
 }
 function sendAllDueWhatsApp(){
   const customers=[...db.customers].filter(c=>{
@@ -436,7 +487,7 @@ function renderLeads(){
 function renderCustomers(){
  let q=(document.getElementById("customerSearch")?.value||"").toLowerCase();
  let arr=db.customers.filter(x=>(x.name+x.mobile+x.product+x.address).toLowerCase().includes(q));
- document.getElementById("customerTable").innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address)}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button> <button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></td><td>${esc(x.product)}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn primary" onclick="openCustomerProfile(${x.id})">👤 View</button> <button class="btn" onclick="customerWhatsApp('${esc(x.mobile)}','${esc(x.name)}')">💬</button> <button class="btn" onclick="openCustomerService('${esc(x.name)}','${esc(x.mobile)}')">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`;
+ document.getElementById("customerTable").innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address)}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button> <button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></td><td>${esc(x.product)}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn primary" onclick="openCustomerProfile(${x.id})">👤 View</button> <button class="btn" onclick="editCustomer(${x.id})">✏️ Edit</button> <button class="btn" onclick="customerWhatsApp('${esc(x.mobile)}','${esc(x.name)}')">💬</button> <button class="btn" onclick="openCustomerService('${esc(x.name)}','${esc(x.mobile)}')">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`;
 }
 function renderSales(){
  document.getElementById("salesTable").innerHTML=db.sales.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.customer)}</td><td>${esc(x.product)}</td><td>${money(x.total)}</td><td>${money(x.paid)}</td><td>${money(x.pending)}</td><td>${statusBadge(x.pending>0?"Pending":"Paid")}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No sales yet</td></tr>`;
