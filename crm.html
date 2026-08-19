@@ -625,27 +625,29 @@ function viewService(id){
     servicePage.classList.add("page");
 
     servicePage.innerHTML = `
-      <div class="top">
-        <div>
-          <h1>Service</h1>
-          <p>Purixa Water Solution — Service Management</p>
-        </div>
-        <button class="btn primary" onclick="openServiceModal()">＋ New Service</button>
-      </div>
+  <div class="top">
+    <div>
+      <h1>Service</h1>
+      <p>Purixa Water Solution — Service Management</p>
+    </div>
+    <button class="btn primary" onclick="openServiceModal()">
+      ＋ New Service
+    </button>
+  </div>
 
-      <div class="panel">
-        <div class="toolbar">
-          <input
-            class="search"
-            id="serviceSearch"
-            placeholder="Search customer or service..."
-            oninput="renderServices()"
-          >
-        </div>
+  <div class="panel">
+    <div class="toolbar">
+      <input
+        class="search"
+        id="serviceSearch"
+        placeholder="Search customer or service..."
+        oninput="renderServices()"
+      >
+    </div>
 
-        <div id="serviceList"></div>
-      </div>
-    `;
+    <div id="serviceList"></div>
+  </div>
+`;
   }
 
 
