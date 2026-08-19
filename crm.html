@@ -52,7 +52,16 @@ th{background:#f8fafc;color:#53677d}
 .toast.show{display:block}
 @media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
 @media(max-width:560px){.main{padding:12px}.modal-box .cards{grid-template-columns:repeat(2,1fr)!important}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.metric{font-size:21px}.form-grid{grid-template-columns:1fr}.top h1{font-size:20px}.btn{padding:9px 10px}}
+@media print{body>*:not(#invoiceModal){display:none!important}#invoiceModal{display:block!important;position:static}.modal-box{box-shadow:none!important;width:100%!important;max-width:none!important}}
 </style>
+
+<style>
+.invoice{background:#fff;border:1px solid #ddd;border-radius:12px;padding:22px;max-width:760px;margin:auto}
+.invoice h2{margin:0 0 4px}.invoice .inv-head{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #eee;padding-bottom:14px;margin-bottom:14px}
+.invoice table{width:100%;border-collapse:collapse}.invoice th,.invoice td{padding:9px;border-bottom:1px solid #eee;text-align:left}
+.invoice .totals{margin-left:auto;max-width:320px}.invoice .totals div{display:flex;justify-content:space-between;padding:5px}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -180,6 +189,16 @@ th{background:#f8fafc;color:#53677d}
 </div>
 
 <!-- Lead Modal -->
+
+<div class="modal" id="invoiceModal"><div class="modal-box">
+<div class="modal-head"><h3>🧾 Invoice / Receipt</h3><button class="close" onclick="closeModal('invoiceModal')">×</button></div>
+<div id="invoicePreview" class="invoice"></div>
+<div class="toolbar">
+<button class="btn primary" onclick="window.print()">🖨️ Print</button>
+<button class="btn green" onclick="shareInvoiceWhatsApp()">💬 WhatsApp</button>
+</div>
+</div></div>
+
 <div class="modal" id="leadModal"><div class="modal-box">
 <div class="modal-head"><h3>New Lead</h3><button class="close" onclick="closeModal('leadModal')">×</button></div>
 <form onsubmit="saveLead(event)"><div class="form-grid">
@@ -295,7 +314,7 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
 });
 function saveLead(e){e.preventDefault();db.leads.unshift({id:Date.now(),name:leadName.value,mobile:leadMobile.value,product:leadProduct.value,source:leadSource.value,follow:leadFollow.value,status:leadStatus.value,notes:leadNotes.value,created:today});persist();e.target.reset();closeModal("leadModal");toast("Lead saved")}
 function saveCustomer(e){e.preventDefault();db.customers.unshift({id:Date.now(),name:custName.value,mobile:custMobile.value,product:custProduct.value,purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,installStatus:custInstallStatus.value,nextService:custNextService.value,address:custAddress.value});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
-function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;db.sales.unshift({id:Date.now(),date:today,customer:saleCustomer.value,product:saleProduct.value,total,paid,pending:Math.max(0,total-paid),mode:saleMode.value});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
+function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;db.sales.unshift({id:Date.now(),date:today,customer:saleCustomer.value,product:saleProduct.value,total,paid,pending:Math.max(0,total-paid),mode:saleMode.value,pending:Math.max(0,Number(amount)-Number(paid||0)),paymentStatus:(Number(paid||0)>=Number(amount)?"Paid":Number(paid||0)>0?"Partial":"Pending")});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
 function saveService(e){e.preventDefault();db.services.unshift({id:Date.now(),date:today,customer:svcCustomer.value,mobile:svcMobile.value,problem:svcProblem.value,tech:svcTech.value,status:svcStatus.value,amount:+svcAmount.value||0,follow:svcFollow.value,notes:svcNotes.value});persist();e.target.reset();closeModal("serviceModal");toast("Service saved")}
 function saveAMC(e){e.preventDefault();db.amcs.unshift({id:Date.now(),customer:amcCustomer.value,amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:+amcVisits.value||0,nextService:amcNext.value});persist();e.target.reset();closeModal("amcModal");toast("AMC saved")}
 function saveTech(e){e.preventDefault();db.technicians.unshift({id:Date.now(),name:techName.value,mobile:techMobile.value,area:techArea.value,status:techStatus.value});persist();e.target.reset();closeModal("techModal");toast("Technician saved")}
@@ -490,7 +509,17 @@ function renderCustomers(){
  document.getElementById("customerTable").innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address)}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button> <button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></td><td>${esc(x.product)}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn primary" onclick="openCustomerProfile(${x.id})">👤 View</button> <button class="btn" onclick="editCustomer(${x.id})">✏️ Edit</button> <button class="btn" onclick="customerWhatsApp('${esc(x.mobile)}','${esc(x.name)}')">💬</button> <button class="btn" onclick="openCustomerService('${esc(x.name)}','${esc(x.mobile)}')">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`;
 }
 function renderSales(){
- document.getElementById("salesTable").innerHTML=db.sales.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.customer)}</td><td>${esc(x.product)}</td><td>${money(x.total)}</td><td>${money(x.paid)}</td><td>${money(x.pending)}</td><td>${statusBadge(x.pending>0?"Pending":"Paid")}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No sales yet</td></tr>`;
+  updateSalesBalances();
+  const box=document.getElementById("salesList")||document.getElementById("salesTable");
+  if(!box)return;
+  const sales=db.sales||[];
+  if(!sales.length){box.innerHTML='<div class="empty">No sales yet.</div>';return}
+  box.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Total</th><th>Paid</th><th>Pending</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+  ${sales.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{}; return `<tr>
+  <td>${esc(s.date||"-")}</td><td><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(c.mobile||s.mobile||"")}</div></td>
+  <td>${esc(s.product||"-")}</td><td>${money(s.amount)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td>
+  <td>${statusBadge(s.paymentStatus)}</td>
+  <td><button class="btn" onclick="viewInvoice(${s.id})">🧾 Invoice</button></td></tr>`}).join("")}</tbody></table></div>`;
 }
 function renderService(){
  let q=(document.getElementById("serviceSearch")?.value||"").toLowerCase(),arr=db.services.filter(x=>(x.customer+x.mobile+x.problem+x.tech+x.status).toLowerCase().includes(q));
@@ -517,6 +546,43 @@ function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader
 function resetData(){if(confirm("Reset all CRM data?")){db={leads:[],customers:[],sales:[],services:[],amcs:[],technicians:[]};persist();toast("CRM reset")}}
 renderAll();
 setInterval(renderReminders,60000);
+
+function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
+function openInvoice(saleId){
+  const s=(db.sales||[]).find(x=>x.id===saleId); if(!s){toast("Sale not found");return}
+  const c=(db.customers||[]).find(x=>x.id===s.customerId)||{};
+  const paid=Number(s.paid||0), total=Number(s.amount||0), pending=Math.max(0,total-paid);
+  const inv=s.invoiceNo||("PWS-"+String(saleId).padStart(5,"0"));
+  s.invoiceNo=inv; persist();
+  document.getElementById("invoicePreview").innerHTML=`
+    <div class="inv-head"><div><h2>PURIXA WATER SOLUTION</h2><div>Water Purifier • RO Sales • Service • AMC</div></div>
+    <div><b>Invoice No:</b> ${esc(inv)}<br><b>Date:</b> ${esc(s.date||today)}</div></div>
+    <p><b>Customer:</b> ${esc(c.name||s.customer||"-")}<br><b>Mobile:</b> ${esc(c.mobile||s.mobile||"-")}<br><b>Address:</b> ${esc(c.address||"-")}</p>
+    <table><thead><tr><th>Product / Description</th><th>Qty</th><th>Amount</th></tr></thead>
+    <tbody><tr><td>${esc(s.product||"RO Purifier")}</td><td>1</td><td>${money(total)}</td></tr></tbody></table>
+    <div class="totals"><div><b>Total</b><b>${money(total)}</b></div><div>Paid <span>${money(paid)}</span></div><div><b>Pending</b><b>${money(pending)}</b></div></div>
+    <p style="margin-top:24px">Thank you for choosing Purixa Water Solution.</p>`;
+  openModal("invoiceModal");
+}
+function shareInvoiceWhatsApp(){
+  const text=document.getElementById("invoicePreview").innerText;
+  const mobile=(window.currentInvoiceMobile||"").replace(/\D/g,"");
+  const url="https://wa.me/"+(mobile?("91"+mobile):"")+"?text="+encodeURIComponent(text);
+  window.open(url,"_blank");
+}
+function viewInvoice(saleId){
+  const s=(db.sales||[]).find(x=>x.id===saleId); const c=(db.customers||[]).find(x=>x.id===s?.customerId)||{};
+  window.currentInvoiceMobile=c.mobile||s?.mobile||"";
+  openInvoice(saleId);
+}
+function salePaymentStatus(s){
+  const total=Number(s.amount||0), paid=Number(s.paid||0);
+  return paid>=total ? "Paid" : paid>0 ? "Partial" : "Pending";
+}
+function updateSalesBalances(){
+  (db.sales||[]).forEach(s=>{s.paid=Number(s.paid||0);s.pending=Math.max(0,Number(s.amount||0)-s.paid);s.paymentStatus=salePaymentStatus(s);});
+}
+
 </script>
 </body>
 </html>
