@@ -612,5 +612,713 @@ function viewService(id){
 }
 
 </script>
+<script>
+/* ===============================
+   PURIXA CRM SERVICE MODULE FIX
+   =============================== */
+
+(function(){
+
+  // Make Service a proper page
+  const servicePage = document.getElementById("service");
+  if(servicePage){
+    servicePage.classList.add("page");
+
+    servicePage.innerHTML = `
+      <div class="top">
+        <div>
+          <h1>Service</h1>
+          <p>Purixa Water Solution — Service Management</p>
+        </div>
+        <button class="btn primary" onclick="openServiceModal()">＋ New Service</button>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <input
+            class="search"
+            id="serviceSearch"
+            placeholder="Search customer or service..."
+            oninput="renderServices()"
+          >
+        </div>
+
+        <div id="serviceList"></div>
+      </div>
+    `;
+  }
+
+
+  // Replace old Service Modal
+  const oldServiceModal = document.getElementById("serviceModal");
+
+  if(oldServiceModal){
+    oldServiceModal.innerHTML = `
+      <div class="modal-box">
+
+        <div class="modal-head">
+          <h3>New Service Request</h3>
+          <button class="close" onclick="closeModal('serviceModal')">×</button>
+        </div>
+
+        <form onsubmit="saveServiceRequest(event)">
+
+          <div class="form-grid">
+
+            <div class="field">
+              <label>Customer *</label>
+              <select id="svcCustomer" required onchange="serviceCustomerChanged()">
+                <option value="">Select Customer</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Mobile</label>
+              <input id="svcMobile" type="tel" readonly>
+            </div>
+
+            <div class="field">
+              <label>Problem / Service Type *</label>
+              <select id="svcType" required>
+                <option value="">Select Service</option>
+                <option>General Service</option>
+                <option>Filter Change</option>
+                <option>Pump Problem</option>
+                <option>Water Leakage</option>
+                <option>Low Water Flow</option>
+                <option>RO Not Working</option>
+                <option>Installation</option>
+                <option>AMC Service</option>
+                <option>Other</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Technician</label>
+              <select id="svcTechnician">
+                <option value="">Unassigned</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Status</label>
+              <select id="svcStatus">
+                <option>Open</option>
+                <option>Assigned</option>
+                <option>On The Way</option>
+                <option>In Progress</option>
+                <option>Completed</option>
+                <option>Cancelled</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Service Amount</label>
+              <input id="svcCharge" type="number" min="0" value="0">
+            </div>
+
+            <div class="field">
+              <label>Next Follow-up</label>
+              <input id="svcFollow" type="date">
+            </div>
+
+            <div class="field full">
+              <label>Notes</label>
+              <textarea id="svcNotes" rows="3"
+                placeholder="Service details / parts required / customer complaint"></textarea>
+            </div>
+
+          </div>
+
+          <div class="actions">
+            <button type="button"
+              class="btn"
+              onclick="closeModal('serviceModal')">
+              Cancel
+            </button>
+
+            <button type="submit" class="btn primary">
+              💾 Save Service
+            </button>
+          </div>
+
+        </form>
+      </div>
+    `;
+  }
+
+
+  // Create Service Detail Modal if missing
+  if(!document.getElementById("serviceDetailModal")){
+
+    const m = document.createElement("div");
+
+    m.className = "modal";
+    m.id = "serviceDetailModal";
+
+    m.innerHTML = `
+      <div class="modal-box">
+
+        <div class="modal-head">
+          <h3>🔧 Service Details</h3>
+          <button class="close"
+            onclick="closeModal('serviceDetailModal')">×</button>
+        </div>
+
+        <div id="serviceDetail"></div>
+
+      </div>
+    `;
+
+    document.body.appendChild(m);
+  }
+
+
+  // Ensure database arrays exist
+  function ensureServiceData(){
+    db.services = db.services || [];
+    db.technicians = db.technicians || [];
+    db.customers = db.customers || [];
+  }
+
+
+  // Fill customer + technician dropdowns
+  function fillServiceCustomerOptions(){
+
+    ensureServiceData();
+
+    const customerSelect =
+      document.getElementById("svcCustomer");
+
+    const techSelect =
+      document.getElementById("svcTechnician");
+
+    if(!customerSelect) return;
+
+    customerSelect.innerHTML =
+      `<option value="">Select Customer</option>` +
+
+      db.customers.map(c => `
+        <option value="${c.id}">
+          ${esc(c.name)} — ${esc(c.mobile || "")}
+        </option>
+      `).join("");
+
+
+    if(techSelect){
+
+      techSelect.innerHTML =
+        `<option value="">Unassigned</option>` +
+
+        db.technicians.map(t => `
+          <option value="${t.id}">
+            ${esc(t.name)} — ${esc(t.mobile || "")}
+          </option>
+        `).join("");
+    }
+  }
+
+
+  // Customer select -> automatic mobile number
+  window.serviceCustomerChanged = function(){
+
+    const id =
+      Number(document.getElementById("svcCustomer")?.value);
+
+    const c =
+      db.customers.find(x => x.id === id);
+
+    const mobile =
+      document.getElementById("svcMobile");
+
+    if(mobile){
+      mobile.value = c?.mobile || "";
+    }
+  };
+
+
+  // Open Service Modal
+  window.openServiceModal = function(customerId){
+
+    ensureServiceData();
+
+    fillServiceCustomerOptions();
+
+    const form =
+      document.querySelector("#serviceModal form");
+
+    if(form) form.reset();
+
+    const status =
+      document.getElementById("svcStatus");
+
+    if(status) status.value = "Open";
+
+    const amount =
+      document.getElementById("svcCharge");
+
+    if(amount) amount.value = 0;
+
+
+    const select =
+      document.getElementById("svcCustomer");
+
+    if(customerId && select){
+
+      select.value = String(customerId);
+
+      serviceCustomerChanged();
+    }
+
+    openModal("serviceModal");
+  };
+
+
+  // Customer profile -> New Service
+  window.openCustomerService = function(name,mobile){
+
+    ensureServiceData();
+
+    const c =
+      db.customers.find(x =>
+        x.name === name ||
+        x.mobile === mobile
+      );
+
+    if(c){
+
+      openServiceModal(c.id);
+
+    }else{
+
+      openServiceModal();
+
+      const mobileBox =
+        document.getElementById("svcMobile");
+
+      if(mobileBox){
+        mobileBox.value = mobile || "";
+      }
+    }
+  };
+
+
+  // Save Service
+  window.saveServiceRequest = function(e){
+
+    if(e) e.preventDefault();
+
+    ensureServiceData();
+
+    const customerId =
+      Number(document.getElementById("svcCustomer").value);
+
+    const customer =
+      db.customers.find(x => x.id === customerId);
+
+
+    if(!customer){
+
+      toast("Please select a customer");
+
+      return;
+    }
+
+
+    const type =
+      document.getElementById("svcType").value;
+
+    if(!type){
+
+      toast("Please select service type");
+
+      return;
+    }
+
+
+    const technicianId =
+      Number(
+        document.getElementById("svcTechnician").value
+      ) || null;
+
+    const technician =
+      db.technicians.find(x => x.id === technicianId);
+
+
+    const charge =
+      Number(
+        document.getElementById("svcCharge").value
+      ) || 0;
+
+
+    const service = {
+
+      id: Date.now(),
+
+      customerId: customer.id,
+
+      customer: customer.name,
+
+      mobile: customer.mobile || "",
+
+      date: today,
+
+      type: type,
+
+      problem: type,
+
+      technicianId: technicianId,
+
+      tech: technician?.name || "",
+
+      status:
+        document.getElementById("svcStatus").value,
+
+      charge: charge,
+
+      amount: charge,
+
+      follow:
+        document.getElementById("svcFollow").value,
+
+      notes:
+        document.getElementById("svcNotes").value.trim()
+
+    };
+
+
+    db.services.unshift(service);
+
+    persist();
+
+    closeModal("serviceModal");
+
+    renderServices();
+
+    toast("✅ Service saved successfully");
+  };
+
+
+  // Render Service List
+  window.renderServices = function(){
+
+    ensureServiceData();
+
+    const box =
+      document.getElementById("serviceList");
+
+    if(!box) return;
+
+
+    const q =
+      (
+        document.getElementById("serviceSearch")?.value ||
+        ""
+      ).toLowerCase();
+
+
+    const arr =
+      db.services.filter(s => {
+
+        const c =
+          db.customers.find(x =>
+            x.id === s.customerId
+          );
+
+        const customerName =
+          c?.name ||
+          s.customer ||
+          "";
+
+        const mobile =
+          c?.mobile ||
+          s.mobile ||
+          "";
+
+        const type =
+          s.type ||
+          s.problem ||
+          "";
+
+        const tech =
+          s.tech ||
+          "";
+
+        return (
+          customerName +
+          mobile +
+          type +
+          tech +
+          (s.status || "")
+        ).toLowerCase().includes(q);
+      });
+
+
+    if(!arr.length){
+
+      box.innerHTML = `
+        <div class="empty">
+          No service requests found.
+        </div>
+      `;
+
+      return;
+    }
+
+
+    box.innerHTML = arr.map(s => {
+
+      const c =
+        db.customers.find(x =>
+          x.id === s.customerId
+        ) || {};
+
+
+      const t =
+        db.technicians.find(x =>
+          x.id === s.technicianId
+        ) || {};
+
+
+      const customerName =
+        c.name || s.customer || "-";
+
+      const mobile =
+        c.mobile || s.mobile || "";
+
+      const serviceType =
+        s.type || s.problem || "Service";
+
+      const technicianName =
+        t.name || s.tech || "Unassigned";
+
+      const amount =
+        s.charge ?? s.amount ?? 0;
+
+
+      return `
+        <div class="service-card">
+
+          <div class="row">
+
+            <div>
+              <b>${esc(customerName)}</b>
+
+              <div class="mini">
+                ${esc(mobile)}
+                •
+                ${esc(serviceType)}
+              </div>
+            </div>
+
+            ${statusBadge(s.status || "Open")}
+
+          </div>
+
+
+          <div class="mini" style="margin-top:8px">
+
+            📅 ${esc(s.date || "-")}
+
+            • 👨‍🔧 ${esc(technicianName)}
+
+            • 💰 ${money(amount)}
+
+            ${s.follow ?
+              ` • 🔔 Follow-up: ${esc(s.follow)}` :
+              ""
+            }
+
+          </div>
+
+
+          <div class="toolbar" style="margin-top:10px">
+
+            <button class="btn"
+              onclick="viewService(${s.id})">
+              👁️ View
+            </button>
+
+            <button class="btn"
+              onclick="callNo('${esc(mobile)}')">
+              📞 Call
+            </button>
+
+            <button class="btn"
+              onclick="wa('${esc(mobile)}')">
+              💬 WhatsApp
+            </button>
+
+          </div>
+
+        </div>
+      `;
+
+    }).join("");
+  };
+
+
+  // View Service
+  window.viewService = function(id){
+
+    ensureServiceData();
+
+    const s =
+      db.services.find(x => x.id === id);
+
+    if(!s) return;
+
+
+    const c =
+      db.customers.find(x =>
+        x.id === s.customerId
+      ) || {};
+
+
+    const t =
+      db.technicians.find(x =>
+        x.id === s.technicianId
+      ) || {};
+
+
+    const customerName =
+      c.name || s.customer || "-";
+
+    const mobile =
+      c.mobile || s.mobile || "-";
+
+    const type =
+      s.type || s.problem || "-";
+
+    const technician =
+      t.name || s.tech || "Unassigned";
+
+    const amount =
+      s.charge ?? s.amount ?? 0;
+
+
+    const detail =
+      document.getElementById("serviceDetail");
+
+
+    if(detail){
+
+      detail.innerHTML = `
+
+        <div class="service-card">
+
+          <h3>${esc(customerName)}</h3>
+
+          <p>
+            <b>📞 Mobile:</b>
+            ${esc(mobile)}
+          </p>
+
+          <p>
+            <b>📅 Date:</b>
+            ${esc(s.date || "-")}
+          </p>
+
+          <p>
+            <b>🔧 Service:</b>
+            ${esc(type)}
+          </p>
+
+          <p>
+            <b>👨‍🔧 Technician:</b>
+            ${esc(technician)}
+          </p>
+
+          <p>
+            <b>Status:</b>
+            ${statusBadge(s.status || "-")}
+          </p>
+
+          <p>
+            <b>💰 Service Amount:</b>
+            ${money(amount)}
+          </p>
+
+          <p>
+            <b>🔔 Next Follow-up:</b>
+            ${esc(s.follow || "-")}
+          </p>
+
+          <p>
+            <b>📝 Notes:</b>
+            ${esc(s.notes || "-")}
+          </p>
+
+        </div>
+
+        <div class="toolbar">
+
+          <button class="btn"
+            onclick="callNo('${esc(mobile)}')">
+            📞 Call
+          </button>
+
+          <button class="btn green"
+            onclick="wa('${esc(mobile)}','Your Purixa service status is: ${esc(s.status || "Open")}')">
+            💬 WhatsApp
+          </button>
+
+        </div>
+      `;
+
+    }
+
+
+    openModal("serviceDetailModal");
+  };
+
+
+  // IMPORTANT:
+  // Old renderService() was causing JavaScript error
+  // because serviceTable did not exist.
+  window.renderService = function(){
+
+    renderServices();
+
+  };
+
+
+  // Replace renderAll so Service doesn't crash CRM
+  window.renderAll = function(){
+
+    try{ renderDashboard(); }catch(e){ console.error(e); }
+
+    try{ renderLeads(); }catch(e){ console.error(e); }
+
+    try{ renderCustomers(); }catch(e){ console.error(e); }
+
+    try{ renderSales(); }catch(e){ console.error(e); }
+
+    try{ renderServices(); }catch(e){ console.error(e); }
+
+    try{ renderAMC(); }catch(e){ console.error(e); }
+
+    try{ renderTech(); }catch(e){ console.error(e); }
+
+    try{ renderReports(); }catch(e){ console.error(e); }
+
+    try{ renderReminders(); }catch(e){ console.error(e); }
+  };
+
+
+  // Initial service rendering
+  setTimeout(function(){
+
+    try{
+      renderServices();
+    }catch(e){
+      console.error(e);
+    }
+
+  },100);
+
+
+})();
+</script>
 </body>
 </html>
