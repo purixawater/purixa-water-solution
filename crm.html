@@ -86,7 +86,7 @@ th{background:#f8fafc;color:#53677d}
       <div class="card"><div class="label">Open Services</div><div class="metric" id="mService">0</div></div>
       <div class="card"><div class="label">AMC Expiring</div><div class="metric" id="mAMC">0</div></div>
       <div class="card"><div class="label">Follow-ups Today</div><div class="metric" id="mFollow">0</div></div>
-      <div class="card"><div class="label">Technicians</div><div class="metric" id="mTech">0</div></div>
+      <div class="card"><div class="label">Technicians</div><div class="metric" id="mTech">0</div></div><div class="card"><div class="label">Due Follow-ups</div><div class="metric" id="mDue">0</div></div>
     </div>
     <div class="panel" style="background:#eef6ff;border-color:#cfe3ff">
       <h3>Purixa Customer Lifecycle</h3>
@@ -185,7 +185,7 @@ th{background:#f8fafc;color:#53677d}
 <form onsubmit="saveCustomer(event)"><div class="form-grid">
 <div class="field"><label>Name *</label><input id="custName" required></div><div class="field"><label>Mobile *</label><input id="custMobile" required></div>
 <div class="field"><label>Product / Model</label><input id="custProduct"></div><div class="field"><label>Purchase Date</label><input id="custPurchase" type="date"></div>
-<div class="field"><label>Installation Date</label><input id="custInstall" type="date"></div><div class="field"><label>AMC End Date</label><input id="custAMC" type="date"></div>
+<div class="field"><label>Installation Date</label><input id="custInstall" type="date"></div><div class="field"><label>AMC End Date</label><input id="custAMC" type="date"></div><div class="field"><label>Installation Status</label><select id="custInstallStatus"><option>Pending</option><option>Scheduled</option><option>Completed</option></select></div><div class="field"><label>Next Service Date</label><input id="custNextService" type="date"></div>
 <div class="field full"><label>Address</label><textarea id="custAddress" rows="3"></textarea></div>
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('customerModal')">Cancel</button><button class="btn primary">Save Customer</button></div></form>
 </div></div>
@@ -195,7 +195,7 @@ th{background:#f8fafc;color:#53677d}
 <div class="modal-head"><h3>New Sale</h3><button class="close" onclick="closeModal('saleModal')">×</button></div>
 <form onsubmit="saveSale(event)"><div class="form-grid">
 <div class="field"><label>Customer *</label><input id="saleCustomer" required></div><div class="field"><label>Product</label><input id="saleProduct"></div>
-<div class="field"><label>Total Amount</label><input id="saleTotal" type="number" min="0" value="0"></div><div class="field"><label>Paid Amount</label><input id="salePaid" type="number" min="0" value="0"></div>
+<div class="field"><label>Total Amount</label><input id="saleTotal" type="number" min="0" value="0"></div><div class="field"><label>Paid Amount</label><input id="salePaid" type="number" min="0" value="0"></div><div class="field"><label>Payment Mode</label><select id="saleMode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Pending</option></select></div>
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('saleModal')">Cancel</button><button class="btn primary">Save Sale</button></div></form>
 </div></div>
 
@@ -206,7 +206,7 @@ th{background:#f8fafc;color:#53677d}
 <div class="field"><label>Customer *</label><input id="svcCustomer" required></div><div class="field"><label>Mobile</label><input id="svcMobile"></div>
 <div class="field"><label>Problem</label><input id="svcProblem" placeholder="Filter / Pump / Leakage / General Service"></div><div class="field"><label>Technician</label><input id="svcTech"></div>
 <div class="field"><label>Status</label><select id="svcStatus"><option>Open</option><option>Assigned</option><option>On The Way</option><option>In Progress</option><option>Completed</option><option>Cancelled</option></select></div>
-<div class="field"><label>Service Amount</label><input id="svcAmount" type="number" min="0" value="0"></div>
+<div class="field"><label>Service Amount</label><input id="svcAmount" type="number" min="0" value="0"></div><div class="field"><label>Next Follow-up</label><input id="svcFollow" type="date"></div>
 <div class="field full"><label>Notes</label><textarea id="svcNotes" rows="3"></textarea></div>
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('serviceModal')">Cancel</button><button class="btn primary">Save Service</button></div></form>
 </div></div>
@@ -217,7 +217,7 @@ th{background:#f8fafc;color:#53677d}
 <form onsubmit="saveAMC(event)"><div class="form-grid">
 <div class="field"><label>Customer *</label><input id="amcCustomer" required></div><div class="field"><label>Amount</label><input id="amcAmount" type="number" min="0" value="0"></div>
 <div class="field"><label>Start Date</label><input id="amcStart" type="date"></div><div class="field"><label>End Date</label><input id="amcEnd" type="date"></div>
-<div class="field"><label>Total Visits</label><input id="amcVisits" type="number" min="0" value="4"></div>
+<div class="field"><label>Total Visits</label><input id="amcVisits" type="number" min="0" value="4"></div><div class="field"><label>Next Service Date</label><input id="amcNext" type="date"></div>
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('amcModal')">Cancel</button><button class="btn primary">Save AMC</button></div></form>
 </div></div>
 
@@ -262,10 +262,10 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
  renderAll();
 });
 function saveLead(e){e.preventDefault();db.leads.unshift({id:Date.now(),name:leadName.value,mobile:leadMobile.value,product:leadProduct.value,source:leadSource.value,follow:leadFollow.value,status:leadStatus.value,notes:leadNotes.value,created:today});persist();e.target.reset();closeModal("leadModal");toast("Lead saved")}
-function saveCustomer(e){e.preventDefault();db.customers.unshift({id:Date.now(),name:custName.value,mobile:custMobile.value,product:custProduct.value,purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,address:custAddress.value});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
-function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;db.sales.unshift({id:Date.now(),date:today,customer:saleCustomer.value,product:saleProduct.value,total,paid,pending:Math.max(0,total-paid)});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
-function saveService(e){e.preventDefault();db.services.unshift({id:Date.now(),date:today,customer:svcCustomer.value,mobile:svcMobile.value,problem:svcProblem.value,tech:svcTech.value,status:svcStatus.value,amount:+svcAmount.value||0,notes:svcNotes.value});persist();e.target.reset();closeModal("serviceModal");toast("Service saved")}
-function saveAMC(e){e.preventDefault();db.amcs.unshift({id:Date.now(),customer:amcCustomer.value,amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:+amcVisits.value||0});persist();e.target.reset();closeModal("amcModal");toast("AMC saved")}
+function saveCustomer(e){e.preventDefault();db.customers.unshift({id:Date.now(),name:custName.value,mobile:custMobile.value,product:custProduct.value,purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,installStatus:custInstallStatus.value,nextService:custNextService.value,address:custAddress.value});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
+function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;db.sales.unshift({id:Date.now(),date:today,customer:saleCustomer.value,product:saleProduct.value,total,paid,pending:Math.max(0,total-paid),mode:saleMode.value});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
+function saveService(e){e.preventDefault();db.services.unshift({id:Date.now(),date:today,customer:svcCustomer.value,mobile:svcMobile.value,problem:svcProblem.value,tech:svcTech.value,status:svcStatus.value,amount:+svcAmount.value||0,follow:svcFollow.value,notes:svcNotes.value});persist();e.target.reset();closeModal("serviceModal");toast("Service saved")}
+function saveAMC(e){e.preventDefault();db.amcs.unshift({id:Date.now(),customer:amcCustomer.value,amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:+amcVisits.value||0,nextService:amcNext.value});persist();e.target.reset();closeModal("amcModal");toast("AMC saved")}
 function saveTech(e){e.preventDefault();db.technicians.unshift({id:Date.now(),name:techName.value,mobile:techMobile.value,area:techArea.value,status:techStatus.value});persist();e.target.reset();closeModal("techModal");toast("Technician saved")}
 function callNo(n){if(n)location.href="tel:"+n}
 function wa(n,msg="Hello, Purixa Water Solution"){if(n)window.open("https://wa.me/91"+String(n).replace(/\D/g,"")+"?text="+encodeURIComponent(msg),"_blank")}
@@ -308,17 +308,24 @@ function openCustomerProfile(id){
         <p><b>Address:</b> ${esc(c.address||"-")}</p>
       </div>
       <div class="panel">
+        <h3>🧭 Customer Lifecycle</h3>
+        <p><b>Installation:</b> ${esc(c.install||"-")} (${esc(c.installStatus||"Pending")})</p>
+        <p><b>Next Service:</b> ${esc(c.nextService||"-")}</p>
+        <p><b>AMC End:</b> ${esc(c.amc||"-")}</p>
+        <p><b>Payment Pending:</b> ${money(pending)}</p>
+      </div>
+      <div class="panel">
         <h3>AMC History</h3>
         ${amcs.length ? amcs.map(a=>`<div class="lead"><b>${money(a.amount)}</b><div class="mini">${esc(a.start||"-")} → ${esc(a.end||"-")} · ${a.visits} visits</div></div>`).join("") : '<div class="empty">No AMC records</div>'}
       </div>
     </div>
     <div class="panel">
       <h3>Sales & Payments</h3>
-      ${sales.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Product</th><th>Total</th><th>Paid</th><th>Pending</th></tr></thead><tbody>${sales.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No sales records</div>'}
+      ${sales.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Product</th><th>Total</th><th>Paid</th><th>Pending</th><th>Mode</th></tr></thead><tbody>${sales.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td><td>${esc(s.mode||"-")}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No sales records</div>'}
     </div>
     <div class="panel">
       <h3>Service History</h3>
-      ${services.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Problem</th><th>Technician</th><th>Amount</th><th>Status</th></tr></thead><tbody>${services.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.problem||"-")}</td><td>${esc(s.tech||"-")}</td><td>${money(s.amount||0)}</td><td>${statusBadge(s.status)}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No service records</div>'}
+      ${services.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Problem</th><th>Technician</th><th>Amount</th><th>Follow-up</th><th>Status</th></tr></thead><tbody>${services.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.problem||"-")}</td><td>${esc(s.tech||"-")}</td><td>${money(s.amount||0)}</td><td>${esc(s.follow||"-")}</td><td>${statusBadge(s.status)}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No service records</div>'}
     </div>`;
   openModal("customerProfileModal");
 }
@@ -356,6 +363,7 @@ function renderDashboard(){
  document.getElementById("mAMC").textContent=db.amcs.filter(x=>x.end && x.end<=new Date(Date.now()+30*864e5).toISOString().slice(0,10)).length;
  document.getElementById("mFollow").textContent=db.leads.filter(x=>x.follow===today && x.status!=="Lost").length;
  document.getElementById("mTech").textContent=db.technicians.length;
+ document.getElementById("mDue").textContent=db.services.filter(x=>x.follow&&x.follow<=today&&x.status!=="Completed").length+db.customers.filter(x=>x.nextService&&x.nextService<=today).length;
  let f=db.leads.filter(x=>x.follow===today).slice(0,8);
  document.getElementById("todayFollow").innerHTML=f.length?f.map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product)} · ${statusBadge(x.status)}</div><div class="toolbar" style="margin:7px 0 0"><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞 Call</button><button class="btn" onclick="wa('${esc(x.mobile)}')">💬 WhatsApp</button></div></div>`).join(""):`<div class="empty">No follow-ups today</div>`;
  let s=db.services.slice(0,6);
