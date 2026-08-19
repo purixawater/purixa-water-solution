@@ -88,6 +88,10 @@ th{background:#f8fafc;color:#53677d}
       <div class="card"><div class="label">Follow-ups Today</div><div class="metric" id="mFollow">0</div></div>
       <div class="card"><div class="label">Technicians</div><div class="metric" id="mTech">0</div></div>
     </div>
+    <div class="panel" style="background:#eef6ff;border-color:#cfe3ff">
+      <h3>Purixa Customer Lifecycle</h3>
+      <p style="margin:0;color:#52677d">🎯 Lead → 👥 Customer → 💰 Sale → 🛠️ Installation → 🔧 Service → 🔄 AMC → 🔔 Renewal</p>
+    </div>
     <div class="grid2">
       <div class="panel"><h3>Today's Follow-ups</h3><div id="todayFollow"></div></div>
       <div class="panel"><h3>Recent Service Requests</h3><div id="recentService"></div></div>
@@ -202,6 +206,7 @@ th{background:#f8fafc;color:#53677d}
 <div class="field"><label>Customer *</label><input id="svcCustomer" required></div><div class="field"><label>Mobile</label><input id="svcMobile"></div>
 <div class="field"><label>Problem</label><input id="svcProblem" placeholder="Filter / Pump / Leakage / General Service"></div><div class="field"><label>Technician</label><input id="svcTech"></div>
 <div class="field"><label>Status</label><select id="svcStatus"><option>Open</option><option>Assigned</option><option>On The Way</option><option>In Progress</option><option>Completed</option><option>Cancelled</option></select></div>
+<div class="field"><label>Service Amount</label><input id="svcAmount" type="number" min="0" value="0"></div>
 <div class="field full"><label>Notes</label><textarea id="svcNotes" rows="3"></textarea></div>
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('serviceModal')">Cancel</button><button class="btn primary">Save Service</button></div></form>
 </div></div>
@@ -249,12 +254,37 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
 function saveLead(e){e.preventDefault();db.leads.unshift({id:Date.now(),name:leadName.value,mobile:leadMobile.value,product:leadProduct.value,source:leadSource.value,follow:leadFollow.value,status:leadStatus.value,notes:leadNotes.value,created:today});persist();e.target.reset();closeModal("leadModal");toast("Lead saved")}
 function saveCustomer(e){e.preventDefault();db.customers.unshift({id:Date.now(),name:custName.value,mobile:custMobile.value,product:custProduct.value,purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,address:custAddress.value});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
 function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;db.sales.unshift({id:Date.now(),date:today,customer:saleCustomer.value,product:saleProduct.value,total,paid,pending:Math.max(0,total-paid)});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
-function saveService(e){e.preventDefault();db.services.unshift({id:Date.now(),date:today,customer:svcCustomer.value,mobile:svcMobile.value,problem:svcProblem.value,tech:svcTech.value,status:svcStatus.value,notes:svcNotes.value});persist();e.target.reset();closeModal("serviceModal");toast("Service saved")}
+function saveService(e){e.preventDefault();db.services.unshift({id:Date.now(),date:today,customer:svcCustomer.value,mobile:svcMobile.value,problem:svcProblem.value,tech:svcTech.value,status:svcStatus.value,amount:+svcAmount.value||0,notes:svcNotes.value});persist();e.target.reset();closeModal("serviceModal");toast("Service saved")}
 function saveAMC(e){e.preventDefault();db.amcs.unshift({id:Date.now(),customer:amcCustomer.value,amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:+amcVisits.value||0});persist();e.target.reset();closeModal("amcModal");toast("AMC saved")}
 function saveTech(e){e.preventDefault();db.technicians.unshift({id:Date.now(),name:techName.value,mobile:techMobile.value,area:techArea.value,status:techStatus.value});persist();e.target.reset();closeModal("techModal");toast("Technician saved")}
 function callNo(n){if(n)location.href="tel:"+n}
 function wa(n,msg="Hello, Purixa Water Solution"){if(n)window.open("https://wa.me/91"+String(n).replace(/\D/g,"")+"?text="+encodeURIComponent(msg),"_blank")}
 function statusBadge(s){let c=["Completed","Won","Available","Paid"].includes(s)?"green":["Open","New","Assigned","Interested","Quotation"].includes(s)?"orange":["Lost","Cancelled","Off Duty"].includes(s)?"red":"";return `<span class="badge ${c}">${esc(s)}</span>`}
+
+function convertLead(id){
+  const lead=db.leads.find(x=>x.id===id);
+  if(!lead) return;
+  const exists=db.customers.some(x=>x.mobile===lead.mobile);
+  if(!exists){
+    db.customers.unshift({
+      id:Date.now(), name:lead.name, mobile:lead.mobile,
+      product:lead.product||"", purchase:"", install:"",
+      amc:"", address:lead.notes||"", leadId:lead.id
+    });
+  }
+  lead.status="Won";
+  persist();
+  toast(exists ? "Customer already exists — lead marked Won" : "Lead converted to Customer");
+}
+function customerWhatsApp(n,name){
+  wa(n,"Hello "+name+", thank you for choosing Purixa Water Solution. How can we help you?");
+}
+function openCustomerService(name,mobile){
+  document.getElementById("svcCustomer").value=name;
+  document.getElementById("svcMobile").value=mobile;
+  openModal("serviceModal");
+}
+
 function renderDashboard(){
  document.getElementById("mLeads").textContent=db.leads.length;
  document.getElementById("mCustomers").textContent=db.customers.length;
@@ -272,12 +302,12 @@ function renderDashboard(){
 function renderLeads(){
  let q=(document.getElementById("leadSearch")?.value||"").toLowerCase(), arr=db.leads.filter(x=>(x.name+x.mobile+x.product+x.source).toLowerCase().includes(q));
  let stages=["New","Contacted","Interested","Site Visit","Quotation","Negotiation","Won","Lost"];
- document.getElementById("pipeline").innerHTML=stages.map(st=>`<div class="stage"><h4>${st} <span class="mini">(${arr.filter(x=>x.status===st).length})</span></h4>${arr.filter(x=>x.status===st).slice(0,12).map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product||"")}</div><div class="mini">${esc(x.mobile)}</div><div class="toolbar" style="margin:6px 0 0"><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button><button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></div></div>`).join("")||`<div class="mini">No leads</div>`}</div>`).join("");
+ document.getElementById("pipeline").innerHTML=stages.map(st=>`<div class="stage"><h4>${st} <span class="mini">(${arr.filter(x=>x.status===st).length})</span></h4>${arr.filter(x=>x.status===st).slice(0,12).map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product||"")}</div><div class="mini">${esc(x.mobile)}</div><div class="toolbar" style="margin:6px 0 0"><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button><button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button><button class="btn green" onclick="convertLead(${x.id})">→ Customer</button></div></div>`).join("")||`<div class="mini">No leads</div>`}</div>`).join("");
 }
 function renderCustomers(){
  let q=(document.getElementById("customerSearch")?.value||"").toLowerCase();
  let arr=db.customers.filter(x=>(x.name+x.mobile+x.product+x.address).toLowerCase().includes(q));
- document.getElementById("customerTable").innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address)}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button> <button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></td><td>${esc(x.product)}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`;
+ document.getElementById("customerTable").innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address)}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button> <button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></td><td>${esc(x.product)}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn" onclick="customerWhatsApp('${esc(x.mobile)}','${esc(x.name)}')">💬</button> <button class="btn" onclick="openCustomerService('${esc(x.name)}','${esc(x.mobile)}')">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`;
 }
 function renderSales(){
  document.getElementById("salesTable").innerHTML=db.sales.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.customer)}</td><td>${esc(x.product)}</td><td>${money(x.total)}</td><td>${money(x.paid)}</td><td>${money(x.pending)}</td><td>${statusBadge(x.pending>0?"Pending":"Paid")}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No sales yet</td></tr>`;
