@@ -67,6 +67,7 @@ th{background:#f8fafc;color:#53677d}
     <button data-page="amc">AMC</button>
     <button data-page="technicians">Technicians</button>
     <button data-page="reports">Reports</button>
+    <button data-page="reminders">Reminders 🔔</button>
     <button data-page="settings">Settings</button>
   </nav>
 </aside>
@@ -86,7 +87,7 @@ th{background:#f8fafc;color:#53677d}
       <div class="card"><div class="label">Open Services</div><div class="metric" id="mService">0</div></div>
       <div class="card"><div class="label">AMC Expiring</div><div class="metric" id="mAMC">0</div></div>
       <div class="card"><div class="label">Follow-ups Today</div><div class="metric" id="mFollow">0</div></div>
-      <div class="card"><div class="label">Technicians</div><div class="metric" id="mTech">0</div></div><div class="card"><div class="label">Due Follow-ups</div><div class="metric" id="mDue">0</div></div>
+      <div class="card"><div class="label">Technicians</div><div class="metric" id="mTech">0</div></div><div class="card"><div class="label">Due Follow-ups</div><div class="metric" id="mDue">0</div></div><div class="card"><div class="label">AMC Next 30 Days</div><div class="metric" id="mAMC30">0</div></div>
     </div>
     <div class="panel" style="background:#eef6ff;border-color:#cfe3ff">
       <h3>Purixa Customer Lifecycle</h3>
@@ -148,6 +149,19 @@ th{background:#f8fafc;color:#53677d}
       <div class="card"><div class="label">AMC Revenue</div><div class="metric" id="rAMC">₹0</div></div>
     </div>
     <div class="panel"><h3>Business Summary</h3><div id="reportSummary"></div></div>
+  </section>
+
+
+  <section id="reminders" class="page">
+    <div class="panel">
+      <div class="toolbar">
+        <button class="btn primary" onclick="renderReminders()">🔄 Refresh Reminders</button>
+        <button class="btn green" onclick="sendAllDueWhatsApp()">💬 WhatsApp Due Customers</button>
+      </div>
+      <h3>🔔 Service & AMC Reminders</h3>
+      <p class="mini">यहाँ आज और अगले 30 दिनों के service follow-ups तथा AMC expiry दिखाई जाएगी।</p>
+      <div id="reminderList"></div>
+    </div>
   </section>
 
   <section id="settings" class="page">
@@ -354,6 +368,50 @@ function openCustomerService(name,mobile){
   openModal("serviceModal");
 }
 
+
+function daysFromToday(dateStr){
+  if(!dateStr) return null;
+  const d=new Date(dateStr+"T00:00:00");
+  const t=new Date(today+"T00:00:00");
+  return Math.round((d-t)/86400000);
+}
+function reminderClass(days){
+  return days<0 ? "red" : days<=7 ? "red" : days<=15 ? "orange" : "green";
+}
+function renderReminders(){
+  const items=[];
+  db.customers.forEach(c=>{
+    if(c.nextService){
+      const d=daysFromToday(c.nextService);
+      if(d!==null && d<=30) items.push({type:"Service",customer:c.name,mobile:c.mobile,date:c.nextService,days:d,message:`Your Purixa RO service is due on ${c.nextService}.`});
+    }
+    if(c.amc){
+      const d=daysFromToday(c.amc);
+      if(d!==null && d<=30) items.push({type:"AMC Expiry",customer:c.name,mobile:c.mobile,date:c.amc,days:d,message:`Your Purixa AMC is expiring on ${c.amc}. Please contact us for renewal.`});
+    }
+  });
+  db.services.forEach(s=>{
+    if(s.follow){
+      const d=daysFromToday(s.follow);
+      if(d!==null && d<=30 && s.status!=="Completed") items.push({type:"Follow-up",customer:s.customer,mobile:s.mobile,date:s.follow,days:d,message:`Purixa service follow-up is scheduled for ${s.follow}.`});
+    }
+  });
+  items.sort((a,b)=>a.days-b.days);
+  const box=document.getElementById("reminderList");
+  if(!box) return;
+  box.innerHTML=items.length ? `<div class="table-wrap"><table><thead><tr><th>Type</th><th>Customer</th><th>Date</th><th>When</th><th>Action</th></tr></thead><tbody>${items.map((x,i)=>`<tr><td>${statusBadge(x.type)}</td><td><b>${esc(x.customer)}</b><div class="mini">${esc(x.mobile||"-")}</div></td><td>${esc(x.date)}</td><td>${x.days<0?Math.abs(x.days)+" days overdue":x.days===0?"Due today":x.days+" days left"}</td><td><button class="btn" onclick="wa('${esc(x.mobile)}','${esc(x.message)}')">💬 WhatsApp</button> <button class="btn" onclick="callNo('${esc(x.mobile)}')">📞 Call</button></td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No service, follow-up or AMC reminders in the next 30 days.</div>';
+}
+function sendAllDueWhatsApp(){
+  const customers=[...db.customers].filter(c=>{
+    const s=daysFromToday(c.nextService), a=daysFromToday(c.amc);
+    return (s!==null&&s<=30)||(a!==null&&a<=30);
+  });
+  if(!customers.length){toast("No due customers");return}
+  const first=customers[0];
+  wa(first.mobile,`Hello ${first.name}, this is Purixa Water Solution. Your service/AMC reminder is due. Please contact us.`);
+  toast("WhatsApp opened for first due customer");
+}
+
 function renderDashboard(){
  document.getElementById("mLeads").textContent=db.leads.length;
  document.getElementById("mCustomers").textContent=db.customers.length;
@@ -364,6 +422,7 @@ function renderDashboard(){
  document.getElementById("mFollow").textContent=db.leads.filter(x=>x.follow===today && x.status!=="Lost").length;
  document.getElementById("mTech").textContent=db.technicians.length;
  document.getElementById("mDue").textContent=db.services.filter(x=>x.follow&&x.follow<=today&&x.status!=="Completed").length+db.customers.filter(x=>x.nextService&&x.nextService<=today).length;
+ document.getElementById("mAMC30").textContent=db.customers.filter(x=>{const d=daysFromToday(x.amc);return d!==null&&d>=0&&d<=30}).length+db.amcs.filter(x=>{const d=daysFromToday(x.end);return d!==null&&d>=0&&d<=30}).length;
  let f=db.leads.filter(x=>x.follow===today).slice(0,8);
  document.getElementById("todayFollow").innerHTML=f.length?f.map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product)} · ${statusBadge(x.status)}</div><div class="toolbar" style="margin:7px 0 0"><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞 Call</button><button class="btn" onclick="wa('${esc(x.mobile)}')">💬 WhatsApp</button></div></div>`).join(""):`<div class="empty">No follow-ups today</div>`;
  let s=db.services.slice(0,6);
@@ -400,12 +459,13 @@ function renderReports(){
  document.getElementById("rAMC").textContent=money(db.amcs.reduce((a,x)=>a+x.amount,0));
  document.getElementById("reportSummary").innerHTML=`<p><b>Leads:</b> ${total}</p><p><b>Won:</b> ${won}</p><p><b>Customers:</b> ${db.customers.length}</p><p><b>Total Sales:</b> ${money(db.sales.reduce((a,x)=>a+x.total,0))}</p><p><b>Pending:</b> ${money(db.sales.reduce((a,x)=>a+x.pending,0))}</p><p><b>Services:</b> ${db.services.length}</p><p><b>AMC:</b> ${db.amcs.length}</p>`;
 }
-function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSales();renderService();renderAMC();renderTech();renderReports()}
+function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSales();renderService();renderAMC();renderTech();renderReports();renderReminders()}
 function del(type,id){if(confirm("Delete this record?")){db[type]=db[type].filter(x=>x.id!==id);persist();toast("Deleted")}}
 function exportData(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="purixa-crm-backup.json";a.click()}
 function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);persist();toast("Backup imported")}catch{toast("Invalid backup")}};r.readAsText(f)}
 function resetData(){if(confirm("Reset all CRM data?")){db={leads:[],customers:[],sales:[],services:[],amcs:[],technicians:[]};persist();toast("CRM reset")}}
 renderAll();
+setInterval(renderReminders,60000);
 </script>
 </body>
 </html>
