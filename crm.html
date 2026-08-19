@@ -314,7 +314,7 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
 });
 function saveLead(e){e.preventDefault();db.leads.unshift({id:Date.now(),name:leadName.value,mobile:leadMobile.value,product:leadProduct.value,source:leadSource.value,follow:leadFollow.value,status:leadStatus.value,notes:leadNotes.value,created:today});persist();e.target.reset();closeModal("leadModal");toast("Lead saved")}
 function saveCustomer(e){e.preventDefault();db.customers.unshift({id:Date.now(),name:custName.value,mobile:custMobile.value,product:custProduct.value,purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,installStatus:custInstallStatus.value,nextService:custNextService.value,address:custAddress.value});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
-function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;db.sales.unshift({id:Date.now(),date:today,customer:saleCustomer.value,product:saleProduct.value,total,paid,pending:Math.max(0,total-paid),mode:saleMode.value,pending:Math.max(0,Number(amount)-Number(paid||0)),paymentStatus:(Number(paid||0)>=Number(amount)?"Paid":Number(paid||0)>0?"Partial":"Pending")});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
+function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;if(total<=0){toast("Enter total amount");return}if(paid>total){toast("Paid amount cannot exceed total");return}const c=db.customers.find(x=>x.name===saleCustomer.value);db.sales.unshift({id:Date.now(),date:today,customerId:c?.id||null,customer:saleCustomer.value,product:saleProduct.value,total,paid,pending:Math.max(0,total-paid),mode:saleMode.value,paymentStatus:(paid>=total?"Paid":paid>0?"Partial":"Pending")});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")})
 function saveService(e){e.preventDefault();db.services.unshift({id:Date.now(),date:today,customer:svcCustomer.value,mobile:svcMobile.value,problem:svcProblem.value,tech:svcTech.value,status:svcStatus.value,amount:+svcAmount.value||0,follow:svcFollow.value,notes:svcNotes.value});persist();e.target.reset();closeModal("serviceModal");toast("Service saved")}
 function saveAMC(e){e.preventDefault();db.amcs.unshift({id:Date.now(),customer:amcCustomer.value,amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:+amcVisits.value||0,nextService:amcNext.value});persist();e.target.reset();closeModal("amcModal");toast("AMC saved")}
 function saveTech(e){e.preventDefault();db.technicians.unshift({id:Date.now(),name:techName.value,mobile:techMobile.value,area:techArea.value,status:techStatus.value});persist();e.target.reset();closeModal("techModal");toast("Technician saved")}
@@ -517,7 +517,7 @@ function renderSales(){
   box.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Total</th><th>Paid</th><th>Pending</th><th>Status</th><th>Actions</th></tr></thead><tbody>
   ${sales.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{}; return `<tr>
   <td>${esc(s.date||"-")}</td><td><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(c.mobile||s.mobile||"")}</div></td>
-  <td>${esc(s.product||"-")}</td><td>${money(s.amount)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td>
+  <td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td>
   <td>${statusBadge(s.paymentStatus)}</td>
   <td><button class="btn" onclick="viewInvoice(${s.id})">🧾 Invoice</button></td></tr>`}).join("")}</tbody></table></div>`;
 }
@@ -551,7 +551,7 @@ function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFract
 function openInvoice(saleId){
   const s=(db.sales||[]).find(x=>x.id===saleId); if(!s){toast("Sale not found");return}
   const c=(db.customers||[]).find(x=>x.id===s.customerId)||{};
-  const paid=Number(s.paid||0), total=Number(s.amount||0), pending=Math.max(0,total-paid);
+  const paid=Number(s.paid||0), total=Number(s.total||0), pending=Math.max(0,total-paid);
   const inv=s.invoiceNo||("PWS-"+String(saleId).padStart(5,"0"));
   s.invoiceNo=inv; persist();
   document.getElementById("invoicePreview").innerHTML=`
@@ -576,11 +576,11 @@ function viewInvoice(saleId){
   openInvoice(saleId);
 }
 function salePaymentStatus(s){
-  const total=Number(s.amount||0), paid=Number(s.paid||0);
+  const total=Number(s.total||0), paid=Number(s.paid||0);
   return paid>=total ? "Paid" : paid>0 ? "Partial" : "Pending";
 }
 function updateSalesBalances(){
-  (db.sales||[]).forEach(s=>{s.paid=Number(s.paid||0);s.pending=Math.max(0,Number(s.amount||0)-s.paid);s.paymentStatus=salePaymentStatus(s);});
+  (db.sales||[]).forEach(s=>{s.paid=Number(s.paid||0);s.pending=Math.max(0,Number(s.total||0)-s.paid);s.paymentStatus=salePaymentStatus(s);});
 }
 
 </script>
