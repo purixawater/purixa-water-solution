@@ -51,7 +51,7 @@ th{background:#f8fafc;color:#53677d}
 .toast{position:fixed;right:18px;bottom:18px;background:#102a43;color:#fff;padding:12px 15px;border-radius:9px;display:none;z-index:80}
 .toast.show{display:block}
 @media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
-@media(max-width:560px){.main{padding:12px}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.metric{font-size:21px}.form-grid{grid-template-columns:1fr}.top h1{font-size:20px}.btn{padding:9px 10px}}
+@media(max-width:560px){.main{padding:12px}.modal-box .cards{grid-template-columns:repeat(2,1fr)!important}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.metric{font-size:21px}.form-grid{grid-template-columns:1fr}.top h1{font-size:20px}.btn{padding:9px 10px}}
 </style>
 </head>
 <body>
@@ -230,6 +230,16 @@ th{background:#f8fafc;color:#53677d}
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('techModal')">Cancel</button><button class="btn primary">Save Technician</button></div></form>
 </div></div>
 
+
+<!-- Customer Profile Modal -->
+<div class="modal" id="customerProfileModal"><div class="modal-box" style="width:min(900px,100%)">
+<div class="modal-head">
+  <div><h3 id="profileName">Customer Profile</h3><div class="mini" id="profileMobile"></div></div>
+  <button class="close" onclick="closeModal('customerProfileModal')">×</button>
+</div>
+<div id="profileBody"></div>
+</div></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -260,6 +270,58 @@ function saveTech(e){e.preventDefault();db.technicians.unshift({id:Date.now(),na
 function callNo(n){if(n)location.href="tel:"+n}
 function wa(n,msg="Hello, Purixa Water Solution"){if(n)window.open("https://wa.me/91"+String(n).replace(/\D/g,"")+"?text="+encodeURIComponent(msg),"_blank")}
 function statusBadge(s){let c=["Completed","Won","Available","Paid"].includes(s)?"green":["Open","New","Assigned","Interested","Quotation"].includes(s)?"orange":["Lost","Cancelled","Off Duty"].includes(s)?"red":"";return `<span class="badge ${c}">${esc(s)}</span>`}
+
+
+function openCustomerProfile(id){
+  const c=db.customers.find(x=>x.id===id);
+  if(!c) return;
+  document.getElementById("profileName").textContent=c.name;
+  document.getElementById("profileMobile").textContent=c.mobile||"";
+  const sales=db.sales.filter(x=>x.customer.toLowerCase()===c.name.toLowerCase());
+  const services=db.services.filter(x=>x.customer.toLowerCase()===c.name.toLowerCase());
+  const amcs=db.amcs.filter(x=>x.customer.toLowerCase()===c.name.toLowerCase());
+  const total=sales.reduce((a,x)=>a+x.total,0), paid=sales.reduce((a,x)=>a+x.paid,0);
+  const pending=sales.reduce((a,x)=>a+x.pending,0);
+  document.getElementById("profileBody").innerHTML=`
+    <div class="cards" style="grid-template-columns:repeat(4,1fr)">
+      <div class="card"><div class="label">Total Sales</div><div class="metric">${money(total)}</div></div>
+      <div class="card"><div class="label">Paid</div><div class="metric">${money(paid)}</div></div>
+      <div class="card"><div class="label">Pending</div><div class="metric">${money(pending)}</div></div>
+      <div class="card"><div class="label">Services</div><div class="metric">${services.length}</div></div>
+    </div>
+    <div class="toolbar">
+      <button class="btn" onclick="callNo('${esc(c.mobile)}')">📞 Call</button>
+      <button class="btn" onclick="customerWhatsApp('${esc(c.mobile)}','${esc(c.name)}')">💬 WhatsApp</button>
+      <button class="btn primary" onclick="closeModal('customerProfileModal');openCustomerService('${esc(c.name)}','${esc(c.mobile)}')">🔧 New Service</button>
+      <button class="btn primary" onclick="closeModal('customerProfileModal');openModal('saleModal');saleCustomer.value='${esc(c.name)}'">💰 New Sale</button>
+      <button class="btn primary" onclick="closeModal('customerProfileModal');openModal('amcModal');amcCustomer.value='${esc(c.name)}'">🔄 New AMC</button>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h3>Customer Details</h3>
+        <p><b>Name:</b> ${esc(c.name)}</p>
+        <p><b>Mobile:</b> ${esc(c.mobile||"-")}</p>
+        <p><b>Product:</b> ${esc(c.product||"-")}</p>
+        <p><b>Purchase:</b> ${esc(c.purchase||"-")}</p>
+        <p><b>Installation:</b> ${esc(c.install||"-")}</p>
+        <p><b>AMC End:</b> ${esc(c.amc||"-")}</p>
+        <p><b>Address:</b> ${esc(c.address||"-")}</p>
+      </div>
+      <div class="panel">
+        <h3>AMC History</h3>
+        ${amcs.length ? amcs.map(a=>`<div class="lead"><b>${money(a.amount)}</b><div class="mini">${esc(a.start||"-")} → ${esc(a.end||"-")} · ${a.visits} visits</div></div>`).join("") : '<div class="empty">No AMC records</div>'}
+      </div>
+    </div>
+    <div class="panel">
+      <h3>Sales & Payments</h3>
+      ${sales.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Product</th><th>Total</th><th>Paid</th><th>Pending</th></tr></thead><tbody>${sales.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No sales records</div>'}
+    </div>
+    <div class="panel">
+      <h3>Service History</h3>
+      ${services.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Problem</th><th>Technician</th><th>Amount</th><th>Status</th></tr></thead><tbody>${services.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.problem||"-")}</td><td>${esc(s.tech||"-")}</td><td>${money(s.amount||0)}</td><td>${statusBadge(s.status)}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No service records</div>'}
+    </div>`;
+  openModal("customerProfileModal");
+}
 
 function convertLead(id){
   const lead=db.leads.find(x=>x.id===id);
@@ -307,7 +369,7 @@ function renderLeads(){
 function renderCustomers(){
  let q=(document.getElementById("customerSearch")?.value||"").toLowerCase();
  let arr=db.customers.filter(x=>(x.name+x.mobile+x.product+x.address).toLowerCase().includes(q));
- document.getElementById("customerTable").innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address)}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button> <button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></td><td>${esc(x.product)}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn" onclick="customerWhatsApp('${esc(x.mobile)}','${esc(x.name)}')">💬</button> <button class="btn" onclick="openCustomerService('${esc(x.name)}','${esc(x.mobile)}')">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`;
+ document.getElementById("customerTable").innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address)}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button> <button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></td><td>${esc(x.product)}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn primary" onclick="openCustomerProfile(${x.id})">👤 View</button> <button class="btn" onclick="customerWhatsApp('${esc(x.mobile)}','${esc(x.name)}')">💬</button> <button class="btn" onclick="openCustomerService('${esc(x.name)}','${esc(x.mobile)}')">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`;
 }
 function renderSales(){
  document.getElementById("salesTable").innerHTML=db.sales.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.customer)}</td><td>${esc(x.product)}</td><td>${money(x.total)}</td><td>${money(x.paid)}</td><td>${money(x.pending)}</td><td>${statusBadge(x.pending>0?"Pending":"Paid")}</td></tr>`).join("")||`<tr><td colspan="7" class="empty">No sales yet</td></tr>`;
