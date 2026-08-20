@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v12</title>
+<title>Purixa CRM Cloud — v13 AMC Pro</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -53,7 +53,7 @@ th{background:#f8fafc;color:#53677d}
 @media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="reminders"]:before{content:"🔔"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
 @media(max-width:560px){.main{padding:12px}.modal-box .cards{grid-template-columns:repeat(2,1fr)!important}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.metric{font-size:21px}.form-grid{grid-template-columns:1fr}.top h1{font-size:20px}.btn{padding:9px 10px}}
 @media print{body>*:not(#invoiceModal){display:none!important}#invoiceModal{display:block!important;position:static}.modal-box{box-shadow:none!important;width:100%!important;max-width:none!important}}
-</style>
+.amc-countdown{font-weight:700;font-size:12px}.amc-visit{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.amc-visit .mini{white-space:nowrap}.btn.tiny{padding:6px 8px;font-size:11px}.amc-next{white-space:nowrap}</style>
 
 <style>
 .invoice{background:#fff;border:1px solid #ddd;border-radius:12px;padding:22px;max-width:760px;margin:auto}
@@ -261,7 +261,9 @@ th{background:#f8fafc;color:#53677d}
 <div class="field"><label>Customer *</label><select id="amcCustomer" required><option value="">Select Customer</option></select></div>
 <div class="field"><label>AMC Amount</label><input id="amcAmount" type="number" min="0" value="0"></div>
 <div class="field"><label>Start Date</label><input id="amcStart" type="date"></div><div class="field"><label>End Date</label><input id="amcEnd" type="date"></div>
-<div class="field"><label>Total Visits</label><input id="amcVisits" type="number" min="0" value="4"></div><div class="field"><label>Next Service Date</label><input id="amcNext" type="date"></div>
+<div class="field"><label>Total Visits</label><input id="amcVisits" type="number" min="0" value="4"></div>
+<div class="field"><label>Visits Used</label><input id="amcVisitsUsed" type="number" min="0" value="0"></div>
+<div class="field"><label>Next Service Date</label><input id="amcNext" type="date"></div>
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('amcModal')">Cancel</button><button class="btn primary">💾 Save AMC</button></div></form>
 </div></div>
 
@@ -324,6 +326,10 @@ function loadDB(){
         const c=d.customers.find(c=>String(c.name).toLowerCase()===String(a.customer||"").toLowerCase());
         if(c)a.customerId=c.id;
       }
+      a.amount=Number(a.amount||0);
+      a.visits=Math.max(0,Number(a.visits||0));
+      a.visitsUsed=Math.min(a.visits,Math.max(0,Number(a.visitsUsed||a.usedVisits||0)));
+      a.nextService=a.nextService||a.next_service||"";
       return a;
     });
     syncCustomerAMCFields(d);
@@ -407,11 +413,66 @@ function callNoByService(id){const s=db.services.find(x=>x.id===id);callNo(s?.mo
 function waByService(id){const s=db.services.find(x=>x.id===id);wa(s?.mobile||db.customers.find(c=>c.id===s?.customerId)?.mobile,`Hello, this is Purixa Water Solution regarding your service request.`)}
 
 let editingAMCId=null;
-function fillAMCCustomerOptions(selected=""){const s=document.getElementById("amcCustomer");if(!s)return;s.innerHTML='<option value="">Select Customer</option>'+db.customers.map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile||"")}</option>`).join("");if(selected!=="")s.value=String(selected)}
-function openAMCModal(customerId=""){editingAMCId=null;document.getElementById("amcModalTitle").textContent="New AMC";fillAMCCustomerOptions(customerId);amcAmount.value=0;amcStart.value=today;amcEnd.value="";amcVisits.value=4;amcNext.value="";openModal("amcModal")}
+function amcStatus(a){
+  const d=daysFromToday(a.end);
+  if(a.end && d<0)return {label:"Expired",cls:"red"};
+  if(a.visits>0 && Number(a.visitsUsed||0)>=Number(a.visits))return {label:"Visits Completed",cls:"orange"};
+  if(a.end && d<=30)return {label:"Expiring Soon",cls:"orange"};
+  return {label:"Active",cls:"green"};
+}
+function amcDaysText(dateStr){
+  if(!dateStr)return "—";
+  const d=daysFromToday(dateStr);
+  if(d<0)return Math.abs(d)+" days overdue";
+  if(d===0)return "Due today";
+  return d+" days left";
+}
+function amcVisitsLeft(a){return Math.max(0,Number(a.visits||0)-Number(a.visitsUsed||0))}
+function fillAMCCustomerOptions(selected=""){
+  const s=document.getElementById("amcCustomer");if(!s)return;
+  s.innerHTML='<option value="">Select Customer</option>'+db.customers.map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile||"")}</option>`).join("");
+  if(selected!==""&&selected!==null)s.value=String(selected);
+}
+function openAMCModal(customerId=""){
+  editingAMCId=null;document.getElementById("amcModalTitle").textContent="New AMC";
+  fillAMCCustomerOptions(customerId);amcAmount.value=0;amcStart.value=today;amcEnd.value="";
+  amcVisits.value=4;amcVisitsUsed.value=0;amcNext.value="";openModal("amcModal");
+}
 function openAMCForCustomer(id){const c=db.customers.find(x=>x.id===Number(id));if(c)openAMCModal(c.id)}
-function editAMC(id){const a=db.amcs.find(x=>x.id===id);if(!a)return;editingAMCId=id;document.getElementById("amcModalTitle").textContent="Edit AMC";fillAMCCustomerOptions(a.customerId||"");if(!a.customerId){const opt=[...amcCustomer.options].find(o=>o.textContent.split(" — ")[0].toLowerCase()===String(a.customer||"").toLowerCase());if(opt)amcCustomer.value=opt.value}amcAmount.value=a.amount||0;amcStart.value=a.start||"";amcEnd.value=a.end||"";amcVisits.value=a.visits||0;amcNext.value=a.nextService||"";openModal("amcModal")}
-function saveAMC(e){e.preventDefault();const cid=Number(amcCustomer.value)||null;const c=db.customers.find(x=>x.id===cid);if(!c){toast("Please select a customer");return}const data={customerId:cid,customer:c.name,mobile:c.mobile||"",amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:+amcVisits.value||0,nextService:amcNext.value};if(editingAMCId){const a=db.amcs.find(x=>x.id===editingAMCId);if(a)Object.assign(a,data)}else db.amcs.unshift({id:Date.now(),...data});c.amc=data.end||"";persist();e.target.reset();closeModal("amcModal");toast(editingAMCId?"AMC updated":"AMC saved");editingAMCId=null}
+function editAMC(id){
+  const a=db.amcs.find(x=>x.id===id);if(!a)return;
+  editingAMCId=id;document.getElementById("amcModalTitle").textContent="Edit AMC";
+  fillAMCCustomerOptions(a.customerId||"");
+  if(!a.customerId){
+    const opt=[...amcCustomer.options].find(o=>o.textContent.split(" — ")[0].toLowerCase()===String(a.customer||"").toLowerCase());
+    if(opt)amcCustomer.value=opt.value;
+  }
+  amcAmount.value=a.amount||0;amcStart.value=a.start||"";amcEnd.value=a.end||"";
+  amcVisits.value=a.visits||0;amcVisitsUsed.value=Math.min(Number(a.visits||0),Number(a.visitsUsed||0));
+  amcNext.value=a.nextService||"";openModal("amcModal");
+}
+function saveAMC(e){
+  e.preventDefault();
+  const cid=Number(amcCustomer.value)||null,c=db.customers.find(x=>x.id===cid);
+  if(!c){toast("Please select a customer");return}
+  const totalVisits=Math.max(0,+amcVisits.value||0),usedVisits=Math.min(totalVisits,Math.max(0,+amcVisitsUsed.value||0));
+  const data={customerId:cid,customer:c.name,mobile:c.mobile||"",amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:totalVisits,visitsUsed:usedVisits,nextService:amcNext.value};
+  if(editingAMCId){const a=db.amcs.find(x=>x.id===editingAMCId);if(a)Object.assign(a,data)}
+  else db.amcs.unshift({id:Date.now(),...data});
+  c.amc=data.end||"";persist();e.target.reset();closeModal("amcModal");
+  toast(editingAMCId?"AMC updated":"AMC saved");editingAMCId=null;
+}
+function markAMCVisit(id){
+  const a=db.amcs.find(x=>x.id===id);if(!a)return;
+  const total=Number(a.visits||0),used=Number(a.visitsUsed||0);
+  if(total&&used>=total){toast("All AMC visits already used");return}
+  a.visitsUsed=used+1;persist();toast("AMC visit marked as completed");
+}
+function resetAMCVisits(id){
+  const a=db.amcs.find(x=>x.id===id);if(!a)return;
+  if(!confirm("Reset AMC visits used to 0?"))return;
+  a.visitsUsed=0;persist();toast("AMC visits reset");
+}
 function saveTech(e){e.preventDefault();db.technicians.unshift({id:Date.now(),name:techName.value.trim(),mobile:techMobile.value.trim(),area:techArea.value.trim(),status:techStatus.value});persist();e.target.reset();closeModal("techModal");toast("Technician saved")}
 function callNo(n){if(n)location.href="tel:"+String(n).replace(/\s/g,"")}
 function wa(n,msg="Hello, Purixa Water Solution"){const num=String(n||"").replace(/\D/g,"");if(!num)return toast("Mobile number not available");window.open("https://wa.me/91"+num+"?text="+encodeURIComponent(msg),"_blank")}
@@ -443,7 +504,24 @@ function renderLeads(){const q=(leadSearch?.value||"").toLowerCase(),arr=db.lead
 function renderCustomers(){const q=(customerSearch?.value||"").toLowerCase(),arr=db.customers.filter(x=>(x.name+x.mobile+x.product+x.address).toLowerCase().includes(q));customerTable.innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address||"")}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="customerCallById(${x.id})">📞</button> <button class="btn" onclick="customerWhatsAppById(${x.id})">💬</button></td><td>${esc(x.product||"-")}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn primary" onclick="openCustomerProfile(${x.id})">👤 View</button> <button class="btn" onclick="editCustomer(${x.id})">✏️ Edit</button> <button class="btn" onclick="openCustomerService(${x.id})">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`}
 function renderSales(){updateSalesBalances();const box=document.getElementById("salesTable");if(!box)return;box.innerHTML=db.sales.length?db.sales.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};return `<tr><td>${esc(s.date||"-")}</td><td><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(c.mobile||s.mobile||"")}</div></td><td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td><td>${statusBadge(s.paymentStatus)}</td><td><button class="btn" onclick="viewInvoice(${s.id})">🧾 Invoice</button></td></tr>`}).join(""): `<tr><td colspan="8" class="empty">No sales yet.</td></tr>`}
 function renderServices(){const q=(document.getElementById("serviceSearch")?.value||"").toLowerCase();const arr=db.services.filter(s=>(s.customer+s.mobile+s.problem+s.tech+s.status).toLowerCase().includes(q));const box=document.getElementById("serviceList");if(!box)return;box.innerHTML=arr.length?arr.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};const mobile=c.mobile||s.mobile||"";return `<div class="service-card"><div class="row"><div><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(mobile)} • ${esc(s.problem||"Service")}</div></div>${statusBadge(s.status||"Open")}</div><div class="mini">📅 ${esc(s.date||"-")} • 👨‍🔧 ${esc(s.tech||"Unassigned")} • 💰 ${money(s.amount??s.charge??0)}${s.follow?` • 🔔 Follow-up ${esc(s.follow)}`:""}</div><div class="mini" style="margin-top:7px">${esc(s.notes||"")}</div><div class="toolbar" style="margin:8px 0 0"><button class="btn" onclick="viewService(${s.id})">👁 View</button><button class="btn" onclick="editService(${s.id})">✏️ Edit</button><button class="btn" onclick="waByService(${s.id})">💬 WhatsApp</button><button class="btn red" onclick="del('services',${s.id})">Delete</button></div></div>`}).join(""):`<div class="empty">No service requests found.</div>`}
-function renderAMC(){const box=document.getElementById("amcTable");if(!box)return;box.innerHTML=db.amcs.map(x=>{const d=daysFromToday(x.end);const expired=x.end&&d<0;const soon=x.end&&d>=0&&d<=30;const label=expired?"Expired":soon?"Expiring Soon":"Active";return `<tr><td><b>${esc(x.customer||"-")}</b><div class="mini">${esc(x.mobile||"")}</div></td><td>${esc(x.start||"-")}</td><td>${esc(x.end||"-")}</td><td>${money(x.amount)}</td><td>${esc(x.visits??0)}</td><td>${esc(x.nextService||"-")}</td><td>${statusBadge(label)}</td><td><button class="btn" onclick="editAMC(${x.id})">✏️ Edit</button> <button class="btn red" onclick="del('amcs',${x.id})">Delete</button></td></tr>`}).join("")||`<tr><td colspan="8" class="empty">No AMC records yet. Click “Add AMC” to create one.</td></tr>`}
+function renderAMC(){
+  const box=document.getElementById("amcTable");if(!box)return;
+  box.innerHTML=db.amcs.map(x=>{
+    const st=amcStatus(x),left=amcVisitsLeft(x),total=Number(x.visits||0),used=Number(x.visitsUsed||0);
+    return `<tr>
+      <td><b>${esc(x.customer||"-")}</b><div class="mini">${esc(x.mobile||"")}</div></td>
+      <td>${esc(x.start||"-")}</td>
+      <td>${esc(x.end||"-")}<div class="amc-countdown">${x.end?amcDaysText(x.end):"No end date"}</div></td>
+      <td>${money(x.amount)}</td>
+      <td><div class="amc-visit"><b>${used}/${total}</b><span class="mini">(${left} left)</span></div>
+        <div class="toolbar" style="margin:5px 0 0">${(!total||used<total)?`<button class="btn tiny" onclick="markAMCVisit(${x.id})">＋ Visit</button>`:""}${used>0?`<button class="btn tiny" onclick="resetAMCVisits(${x.id})">↺ Reset</button>`:""}</div>
+      </td>
+      <td class="amc-next">${esc(x.nextService||"-")}${x.nextService?`<div class="amc-countdown">${amcDaysText(x.nextService)}</div>`:""}</td>
+      <td>${statusBadge(st.label)}</td>
+      <td><button class="btn" onclick="editAMC(${x.id})">✏️ Edit</button> <button class="btn red" onclick="del('amcs',${x.id})">Delete</button></td>
+    </tr>`;
+  }).join("")||`<tr><td colspan="8" class="empty">No AMC records yet. Click “Add AMC” to create one.</td></tr>`;
+}
 function renderTech(){techTable.innerHTML=db.technicians.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.mobile)} <button class="btn" onclick="callNo('${String(x.mobile||"").replace(/'/g,"\\'")}')">📞</button></td><td>${esc(x.area)}</td><td>${statusBadge(x.status)}</td><td>${db.services.filter(s=>(s.technicianId===x.id||s.tech===x.name)&&!["Completed","Cancelled"].includes(s.status)).length}</td><td><button class="btn red" onclick="del('technicians',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No technicians</td></tr>`}
 function renderReports(){const total=db.leads.length,won=db.leads.filter(x=>x.status==="Won").length;rConversion.textContent=(total?Math.round(won/total*100):0)+"%";rCollected.textContent=money(db.sales.reduce((a,x)=>a+Number(x.paid||0),0));rService.textContent=money(db.services.filter(x=>x.status==="Completed").reduce((a,x)=>a+Number(x.amount??x.charge??0),0));rAMC.textContent=money(db.amcs.reduce((a,x)=>a+Number(x.amount||0),0));reportSummary.innerHTML=`<p><b>Leads:</b> ${total}</p><p><b>Won:</b> ${won}</p><p><b>Customers:</b> ${db.customers.length}</p><p><b>Total Sales:</b> ${money(db.sales.reduce((a,x)=>a+Number(x.total||0),0))}</p><p><b>Pending:</b> ${money(db.sales.reduce((a,x)=>a+Number(x.pending||0),0))}</p><p><b>Services:</b> ${db.services.length}</p><p><b>AMC:</b> ${db.amcs.length}</p>`}
 
