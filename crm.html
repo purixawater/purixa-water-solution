@@ -267,6 +267,29 @@ th{background:#f8fafc;color:#53677d}
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('amcModal')">Cancel</button><button class="btn primary">💾 Save AMC</button></div></form>
 </div></div>
 
+<!-- AMC Visit Modal -->
+<div class="modal" id="amcVisitModal"><div class="modal-box">
+<div class="modal-head"><h3>AMC Service Visit</h3><button class="close" onclick="closeModal('amcVisitModal')">×</button></div>
+<form onsubmit="saveAMCVisit(event)"><div class="form-grid">
+<div class="field"><label>Customer</label><input id="amcVisitCustomer" readonly></div>
+<div class="field"><label>Visit Date</label><input id="amcVisitDate" type="date" required></div>
+<div class="field"><label>Technician</label><select id="amcVisitTech"><option value="">Unassigned</option></select></div>
+<div class="field"><label>Status</label><select id="amcVisitStatus"><option>Completed</option><option>In Progress</option><option>Cancelled</option></select></div>
+<div class="field full"><label>Customer Complaint</label><input id="amcVisitComplaint" placeholder="Customer complaint / problem"></div>
+<div class="field full"><label>Work Done</label><textarea id="amcVisitWork" rows="2" placeholder="Service work completed"></textarea></div>
+<div class="field full"><label>Parts Used</label><input id="amcVisitParts" placeholder="Filter, membrane, pump, pipe, etc."></div>
+<div class="field"><label>Service Charge</label><input id="amcVisitAmount" type="number" min="0" value="0"></div>
+<div class="field"><label>Next Service Date</label><input id="amcVisitNext" type="date"></div>
+<div class="field full"><label>Notes</label><textarea id="amcVisitNotes" rows="2" placeholder="Additional notes"></textarea></div>
+</div><div class="actions"><button type="button" class="btn" onclick="closeModal('amcVisitModal')">Cancel</button><button class="btn primary">💾 Save Visit</button></div></form>
+</div></div>
+
+<!-- AMC Visit History Modal -->
+<div class="modal" id="amcVisitHistoryModal"><div class="modal-box" style="width:min(900px,100%)">
+<div class="modal-head"><h3>AMC Visit History</h3><button class="close" onclick="closeModal('amcVisitHistoryModal')">×</button></div>
+<div id="amcVisitHistory"></div>
+</div></div>
+
 <!-- Tech Modal -->
 <div class="modal" id="techModal"><div class="modal-box">
 <div class="modal-head"><h3>New Technician</h3><button class="close" onclick="closeModal('techModal')">×</button></div>
@@ -330,6 +353,7 @@ function loadDB(){
       a.visits=Math.max(0,Number(a.visits||0));
       a.visitsUsed=Math.min(a.visits,Math.max(0,Number(a.visitsUsed||a.usedVisits||0)));
       a.nextService=a.nextService||a.next_service||"";
+      if(!Array.isArray(a.visitHistory))a.visitHistory=[];
       return a;
     });
     syncCustomerAMCFields(d);
@@ -462,11 +486,53 @@ function saveAMC(e){
   c.amc=data.end||"";persist();e.target.reset();closeModal("amcModal");
   toast(editingAMCId?"AMC updated":"AMC saved");editingAMCId=null;
 }
+let currentAMCVisitId=null;
+function fillAMCVisitTechOptions(){
+  const s=document.getElementById("amcVisitTech");if(!s)return;
+  s.innerHTML='<option value="">Unassigned</option>'+db.technicians.map(t=>`<option value="${t.id}">${esc(t.name)} — ${esc(t.mobile||"")}</option>`).join("");
+}
 function markAMCVisit(id){
   const a=db.amcs.find(x=>x.id===id);if(!a)return;
   const total=Number(a.visits||0),used=Number(a.visitsUsed||0);
   if(total&&used>=total){toast("All AMC visits already used");return}
-  a.visitsUsed=used+1;persist();toast("AMC visit marked as completed");
+  currentAMCVisitId=id;fillAMCVisitTechOptions();
+  const c=db.customers.find(x=>x.id===a.customerId);
+  document.getElementById("amcVisitCustomer").value=a.customer||c?.name||"Customer";
+  document.getElementById("amcVisitDate").value=today;
+  document.getElementById("amcVisitTech").value="";
+  document.getElementById("amcVisitStatus").value="Completed";
+  document.getElementById("amcVisitComplaint").value="";
+  document.getElementById("amcVisitWork").value="";
+  document.getElementById("amcVisitParts").value="";
+  document.getElementById("amcVisitAmount").value="0";
+  document.getElementById("amcVisitNext").value=a.nextService||"";
+  document.getElementById("amcVisitNotes").value="";
+  openModal("amcVisitModal");
+}
+function saveAMCVisit(e){
+  e.preventDefault();
+  const a=db.amcs.find(x=>x.id===currentAMCVisitId);if(!a)return;
+  const total=Number(a.visits||0),used=Number(a.visitsUsed||0);
+  if(total&&used>=total){toast("All AMC visits already used");closeModal("amcVisitModal");return}
+  const tid=Number(document.getElementById("amcVisitTech").value)||null;
+  const tech=db.technicians.find(x=>x.id===tid);
+  const visit={id:Date.now(),date:document.getElementById("amcVisitDate").value||today,technicianId:tid,technician:tech?.name||"Unassigned",status:document.getElementById("amcVisitStatus").value,complaint:document.getElementById("amcVisitComplaint").value.trim(),work:document.getElementById("amcVisitWork").value.trim(),parts:document.getElementById("amcVisitParts").value.trim(),amount:+document.getElementById("amcVisitAmount").value||0,nextService:document.getElementById("amcVisitNext").value||"",notes:document.getElementById("amcVisitNotes").value.trim()};
+  if(!Array.isArray(a.visitHistory))a.visitHistory=[];
+  a.visitHistory.push(visit);
+  if(visit.status!=="Cancelled")a.visitsUsed=used+1;
+  if(visit.nextService)a.nextService=visit.nextService;
+  const c=db.customers.find(x=>x.id===a.customerId);
+  if(c&&visit.nextService)c.nextService=visit.nextService;
+  if(visit.status!=="Cancelled"){
+    db.services.unshift({id:Date.now()+1,customerId:a.customerId,customer:a.customer,mobile:a.mobile||c?.mobile||"",problem:visit.complaint||"AMC Service",tech:visit.technician,technicianId:visit.technicianId,status:"Completed",amount:visit.amount,charge:visit.amount,date:visit.date,follow:visit.nextService,notes:[visit.work&&"Work: "+visit.work,visit.parts&&"Parts: "+visit.parts,visit.notes].filter(Boolean).join(" | "),amcId:a.id,amcVisitId:visit.id});
+  }
+  persist();closeModal("amcVisitModal");toast(visit.status==="Cancelled"?"AMC visit cancelled":"AMC visit saved successfully");currentAMCVisitId=null;
+}
+function viewAMCVisits(id){
+  const a=db.amcs.find(x=>x.id===id);if(!a)return;
+  const visits=Array.isArray(a.visitHistory)?a.visitHistory:[];
+  document.getElementById("amcVisitHistory").innerHTML=`<div class="panel"><h3>${esc(a.customer||"Customer")}</h3><div class="mini">AMC ${esc(a.start||"-")} → ${esc(a.end||"-")} · ${Number(a.visitsUsed||0)}/${Number(a.visits||0)} visits used</div></div>`+(visits.length?`<div class="table-wrap"><table><thead><tr><th>#</th><th>Date</th><th>Technician</th><th>Complaint</th><th>Work Done</th><th>Parts</th><th>Amount</th><th>Next Service</th></tr></thead><tbody>${visits.map((v,i)=>`<tr><td>${i+1}</td><td>${esc(v.date||"-")}</td><td>${esc(v.technician||"Unassigned")}</td><td>${esc(v.complaint||"-")}</td><td>${esc(v.work||"-")}</td><td>${esc(v.parts||"-")}</td><td>${money(v.amount||0)}</td><td>${esc(v.nextService||"-")}</td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">No AMC visits recorded yet.</div>`);
+  openModal("amcVisitHistoryModal");
 }
 function resetAMCVisits(id){
   const a=db.amcs.find(x=>x.id===id);if(!a)return;
@@ -514,7 +580,7 @@ function renderAMC(){
       <td>${esc(x.end||"-")}<div class="amc-countdown">${x.end?amcDaysText(x.end):"No end date"}</div></td>
       <td>${money(x.amount)}</td>
       <td><div class="amc-visit"><b>${used}/${total}</b><span class="mini">(${left} left)</span></div>
-        <div class="toolbar" style="margin:5px 0 0">${(!total||used<total)?`<button class="btn tiny" onclick="markAMCVisit(${x.id})">＋ Visit</button>`:""}${used>0?`<button class="btn tiny" onclick="resetAMCVisits(${x.id})">↺ Reset</button>`:""}</div>
+        <div class="toolbar" style="margin:5px 0 0">${(!total||used<total)?`<button class="btn tiny" onclick="markAMCVisit(${x.id})">＋ Visit</button>`:""}<button class="btn tiny" onclick="viewAMCVisits(${x.id})">📋 History</button>${used>0?`<button class="btn tiny" onclick="resetAMCVisits(${x.id})">↺ Reset</button>`:""}</div>
       </td>
       <td class="amc-next">${esc(x.nextService||"-")}${x.nextService?`<div class="amc-countdown">${amcDaysText(x.nextService)}</div>`:""}</td>
       <td>${statusBadge(st.label)}</td>
