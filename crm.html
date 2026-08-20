@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud</title>
+<title>Purixa CRM Cloud — v11</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -50,7 +50,7 @@ th{background:#f8fafc;color:#53677d}
 .empty{text-align:center;color:var(--muted);padding:25px}
 .toast{position:fixed;right:18px;bottom:18px;background:#102a43;color:#fff;padding:12px 15px;border-radius:9px;display:none;z-index:80}
 .toast.show{display:block}
-@media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="reminders"]:before{content:"🔔"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
 @media(max-width:560px){.main{padding:12px}.modal-box .cards{grid-template-columns:repeat(2,1fr)!important}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.metric{font-size:21px}.form-grid{grid-template-columns:1fr}.top h1{font-size:20px}.btn{padding:9px 10px}}
 @media print{body>*:not(#invoiceModal){display:none!important}#invoiceModal{display:block!important;position:static}.modal-box{box-shadow:none!important;width:100%!important;max-width:none!important}}
 </style>
@@ -62,7 +62,7 @@ th{background:#f8fafc;color:#53677d}
 .invoice .totals{margin-left:auto;max-width:320px}.invoice .totals div{display:flex;justify-content:space-between;padding:5px}
 </style>
 
-<style>.service-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin:10px 0;background:#fff}.service-card .row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.mini{font-size:12px;opacity:.7}</style></head>
+<style>.service-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin:10px 0;background:#fff}.service-card .row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.mini{font-size:12px;opacity:.7}.page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.page-head h2{margin:0 0 4px}.page-head p{margin:0;color:var(--muted)}</style></head>
 <body>
 <div class="app">
 <aside class="sidebar">
@@ -129,12 +129,11 @@ th{background:#f8fafc;color:#53677d}
     </div>
   </section>
 
-  <section id="service"><div class="page-head"><div><h2>Service Management</h2><p>Purixa Water Solution — Service Requests & History</p></div><button class="btn primary" onclick="openServiceModal()">+ New Service</button></div><div class="card"><input placeholder="Search customer or service..." oninput="renderServices()"><div id="serviceList"></div></div></section>
-
-  <section id="amc" class="page">
+  <section id="service" class="page">
+    <div class="page-head"><div><h2>Service</h2><p>Purixa Water Solution — Service Management</p></div><button class="btn primary" onclick="openServiceModal()">＋ New Service</button></div>
     <div class="panel">
-      <div class="toolbar"><button class="btn primary" onclick="openModal('amcModal')">＋ Add AMC</button></div>
-      <div class="table-wrap"><table><thead><tr><th>Customer</th><th>Start</th><th>End</th><th>Amount</th><th>Visits</th><th>Status</th></tr></thead><tbody id="amcTable"></tbody></table></div>
+      <div class="toolbar"><input class="search" id="serviceSearch" placeholder="Search customer or service..." oninput="renderServices()"></div>
+      <div id="serviceList"></div>
     </div>
   </section>
 
@@ -229,15 +228,21 @@ th{background:#f8fafc;color:#53677d}
 
 <!-- Service Modal -->
 <div class="modal" id="serviceModal"><div class="modal-box">
-<div class="modal-head"><h3>New Service Request</h3><button class="close" onclick="closeModal('serviceModal')">×</button></div>
+<div class="modal-head"><h3 id="serviceModalTitle">New Service Request</h3><button class="close" onclick="closeModal('serviceModal')">×</button></div>
 <form onsubmit="saveService(event)"><div class="form-grid">
-<div class="field"><label>Customer *</label><input id="svcCustomer" required></div><div class="field"><label>Mobile</label><input id="svcMobile"></div>
-<div class="field"><label>Problem</label><input id="svcProblem" placeholder="Filter / Pump / Leakage / General Service"></div><div class="field"><label>Technician</label><input id="svcTech"></div>
+<div class="field"><label>Customer *</label><select id="svcCustomer" required><option value="">Select Customer</option></select></div>
+<div class="field"><label>Mobile</label><input id="svcMobile" readonly></div>
+<div class="field"><label>Problem / Service Type *</label><select id="svcProblem" required><option value="">Select Service</option><option>General Service</option><option>Filter Change</option><option>RO / Membrane</option><option>Pump Problem</option><option>Leakage</option><option>Water Quality</option><option>Installation</option><option>Other</option></select></div>
+<div class="field"><label>Technician</label><select id="svcTech"><option value="">Unassigned</option></select></div>
 <div class="field"><label>Status</label><select id="svcStatus"><option>Open</option><option>Assigned</option><option>On The Way</option><option>In Progress</option><option>Completed</option><option>Cancelled</option></select></div>
-<div class="field"><label>Service Amount</label><input id="svcAmount" type="number" min="0" value="0"></div><div class="field"><label>Next Follow-up</label><input id="svcFollow" type="date"></div>
-<div class="field full"><label>Notes</label><textarea id="svcNotes" rows="3"></textarea></div>
-</div><div class="actions"><button type="button" class="btn" onclick="closeModal('serviceModal')">Cancel</button><button class="btn primary">Save Service</button></div></form>
+<div class="field"><label>Service Amount</label><input id="svcAmount" type="number" min="0" value="0"></div>
+<div class="field"><label>Service Date</label><input id="svcDate" type="date"></div>
+<div class="field"><label>Next Follow-up</label><input id="svcFollow" type="date"></div>
+<div class="field full"><label>Notes</label><textarea id="svcNotes" rows="3" placeholder="Service details / parts required / customer complaint"></textarea></div>
+</div><div class="actions"><button type="button" class="btn" onclick="closeModal('serviceModal')">Cancel</button><button class="btn primary">💾 Save Service</button></div></form>
 </div></div>
+
+<div class="modal" id="serviceDetailModal"><div class="modal-box"><div class="modal-head"><h3>Service Details</h3><button class="close" onclick="closeModal('serviceDetailModal')">×</button></div><div id="serviceDetail"></div></div></div>
 
 <!-- AMC Modal -->
 <div class="modal" id="amcModal"><div class="modal-box">
@@ -291,1036 +296,120 @@ th{background:#f8fafc;color:#53677d}
 <script>
 const KEY="purixaCRM_v1";
 const today=new Date().toISOString().slice(0,10);
-let db=JSON.parse(localStorage.getItem(KEY)||"null")||{
- leads:[],customers:[],sales:[],services:[],amcs:[],technicians:[]
-};
+const emptyDB=()=>({leads:[],customers:[],sales:[],services:[],amcs:[],technicians:[]});
+let db=loadDB();
+let editingCustomerId=null, editingServiceId=null, currentInvoiceMobile="";
+
+function loadDB(){
+  try{
+    const raw=JSON.parse(localStorage.getItem(KEY)||"null")||emptyDB();
+    const d=Object.assign(emptyDB(),raw);
+    ["leads","customers","sales","services","amcs","technicians"].forEach(k=>{if(!Array.isArray(d[k]))d[k]=[]});
+    d.customers.forEach(c=>{c.notes=c.notes||""});
+    d.sales.forEach(s=>{s.total=Number(s.total??s.amount??0);s.paid=Number(s.paid??0);s.pending=Math.max(0,s.total-s.paid);s.paymentStatus=salePaymentStatus(s)});
+    d.services=d.services.map(s=>normalizeService(s,d));
+    return d;
+  }catch(e){return emptyDB()}
+}
+function normalizeService(s,d=emptyDB()){
+  const customerId=Number(s.customerId)||null;
+  const customer= s.customer || (d.customers||[]).find(c=>c.id===customerId)?.name || "";
+  const mobile= s.mobile || (d.customers||[]).find(c=>c.id===customerId)?.mobile || "";
+  const technicianId=Number(s.technicianId)||null;
+  const tech= s.tech || (d.technicians||[]).find(x=>x.id===technicianId)?.name || "";
+  return {id:s.id||Date.now()+Math.random(),customerId,customer,mobile,problem:s.problem||s.type||"General Service",tech,technicianId,status:s.status||"Open",amount:Number(s.amount??s.charge??0),charge:Number(s.charge??s.amount??0),date:s.date||today,follow:s.follow||"",notes:s.notes||""};
+}
 function persist(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
-function money(n){return "₹"+Number(n||0).toLocaleString("en-IN")}
+function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function toast(t){const x=document.getElementById("toast");x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2200)}
-function openModal(id){document.getElementById(id).classList.add("show")}
-function closeModal(id){document.getElementById(id).classList.remove("show")}
+function toast(t){const x=document.getElementById("toast");if(!x)return;x.textContent=t;x.classList.add("show");setTimeout(()=>x.classList.remove("show"),2200)}
+function openModal(id){const x=document.getElementById(id);if(x)x.classList.add("show")}
+function closeModal(id){const x=document.getElementById(id);if(x)x.classList.remove("show")}
+
 document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
- document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");
- document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
- document.getElementById(b.dataset.page).classList.add("active");
- document.getElementById("pageTitle").textContent=b.textContent;
- renderAll();
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  const page=document.getElementById(b.dataset.page);if(page)page.classList.add("active");
+  document.getElementById("pageTitle").textContent=b.textContent.replace(" 🔔","");
+  renderAll();
 });
-function saveLead(e){e.preventDefault();db.leads.unshift({id:Date.now(),name:leadName.value,mobile:leadMobile.value,product:leadProduct.value,source:leadSource.value,follow:leadFollow.value,status:leadStatus.value,notes:leadNotes.value,created:today});persist();e.target.reset();closeModal("leadModal");toast("Lead saved")}
-function saveCustomer(e){e.preventDefault();db.customers.unshift({id:Date.now(),name:custName.value,mobile:custMobile.value,product:custProduct.value,purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,installStatus:custInstallStatus.value,nextService:custNextService.value,address:custAddress.value});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
-function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;if(total<=0){toast("Enter total amount");return}if(paid>total){toast("Paid amount cannot exceed total");return}const c=db.customers.find(x=>x.name===saleCustomer.value);db.sales.unshift({id:Date.now(),date:today,customerId:c?.id||null,customer:saleCustomer.value,product:saleProduct.value,total:total,amount:total,paid:paid,pending:Math.max(0,total-paid),mode:saleMode.value,paymentStatus:(paid>=total?"Paid":paid>0?"Partial":"Pending")});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
-function saveService(e){e.preventDefault();db.services.unshift({id:Date.now(),date:today,customer:svcCustomer.value,mobile:svcMobile.value,problem:svcProblem.value,tech:svcTech.value,status:svcStatus.value,amount:+svcAmount.value||0,follow:svcFollow.value,notes:svcNotes.value});persist();e.target.reset();closeModal("serviceModal");toast("Service saved")}
-function saveAMC(e){e.preventDefault();db.amcs.unshift({id:Date.now(),customer:amcCustomer.value,amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:+amcVisits.value||0,nextService:amcNext.value});persist();e.target.reset();closeModal("amcModal");toast("AMC saved")}
-function saveTech(e){e.preventDefault();db.technicians.unshift({id:Date.now(),name:techName.value,mobile:techMobile.value,area:techArea.value,status:techStatus.value});persist();e.target.reset();closeModal("techModal");toast("Technician saved")}
-function callNo(n){if(n)location.href="tel:"+n}
-function wa(n,msg="Hello, Purixa Water Solution"){if(n)window.open("https://wa.me/91"+String(n).replace(/\D/g,"")+"?text="+encodeURIComponent(msg),"_blank")}
-function statusBadge(s){let c=["Completed","Won","Available","Paid"].includes(s)?"green":["Open","New","Assigned","Interested","Quotation"].includes(s)?"orange":["Lost","Cancelled","Off Duty"].includes(s)?"red":"";return `<span class="badge ${c}">${esc(s)}</span>`}
 
+function saveLead(e){e.preventDefault();db.leads.unshift({id:Date.now(),name:leadName.value.trim(),mobile:leadMobile.value.trim(),product:leadProduct.value.trim(),source:leadSource.value,follow:leadFollow.value,status:leadStatus.value,notes:leadNotes.value.trim(),created:today});persist();e.target.reset();closeModal("leadModal");toast("Lead saved")}
+function saveCustomer(e){e.preventDefault();const mobile=custMobile.value.trim();if(db.customers.some(x=>x.mobile===mobile)){toast("Customer with this mobile already exists");return}db.customers.unshift({id:Date.now(),name:custName.value.trim(),mobile,product:custProduct.value.trim(),purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,installStatus:custInstallStatus.value,nextService:custNextService.value,address:custAddress.value.trim(),notes:""});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
+function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;if(total<=0){toast("Enter total amount");return}if(paid>total){toast("Paid amount cannot exceed total");return}const c=db.customers.find(x=>x.name.toLowerCase()===saleCustomer.value.trim().toLowerCase());db.sales.unshift({id:Date.now(),date:today,customerId:c?.id||null,customer:saleCustomer.value.trim(),mobile:c?.mobile||"",product:saleProduct.value.trim(),total,amount:total,paid,pending:Math.max(0,total-paid),mode:saleMode.value,paymentStatus:salePaymentStatus({total,paid})});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
 
-
-let editingCustomerId=null;
-function editCustomer(id){
-  const c=db.customers.find(x=>x.id===id); if(!c)return;
-  editingCustomerId=id;
-  editCustName.value=c.name||"";
-  editCustMobile.value=c.mobile||"";
-  editCustProduct.value=c.product||"";
-  editCustPurchase.value=c.purchase||"";
-  editCustInstall.value=c.install||"";
-  editCustInstallStatus.value=c.installStatus||"Pending";
-  editCustNextService.value=c.nextService||"";
-  editCustAMC.value=c.amc||"";
-  editCustAddress.value=c.address||"";
-  editCustNotes.value=c.notes||"";
-  openModal("editCustomerModal");
+function fillServiceCustomerOptions(selectedId=""){
+  const s=document.getElementById("svcCustomer");if(!s)return;
+  s.innerHTML='<option value="">Select Customer</option>'+db.customers.map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile||"")}</option>`).join("");
+  if(selectedId!==""&&selectedId!==null)s.value=String(selectedId);
+  const t=document.getElementById("svcTech");if(t)t.innerHTML='<option value="">Unassigned</option>'+db.technicians.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
+  const date=document.getElementById("svcDate");if(date&&!date.value)date.value=today;
 }
-function saveCustomerEdit(){
-  const c=db.customers.find(x=>x.id===editingCustomerId); if(!c)return;
-  const mobile=editCustMobile.value.trim();
-  if(!editCustName.value.trim()||!mobile){toast("Name and mobile are required");return}
-  const duplicate=db.customers.some(x=>x.id!==editingCustomerId&&x.mobile===mobile);
-  if(duplicate){toast("Another customer already uses this mobile");return}
-  Object.assign(c,{
-    name:editCustName.value.trim(),mobile,
-    product:editCustProduct.value.trim(),purchase:editCustPurchase.value,
-    install:editCustInstall.value,installStatus:editCustInstallStatus.value,
-    nextService:editCustNextService.value,amc:editCustAMC.value,
-    address:editCustAddress.value.trim(),notes:editCustNotes.value.trim()
-  });
-  persist(); closeModal("editCustomerModal"); renderAll(); toast("Customer updated");
-}
-
-function openCustomerProfile(id){
-  const c=db.customers.find(x=>x.id===id);
-  if(!c) return;
-  document.getElementById("profileName").textContent=c.name;
-  document.getElementById("profileMobile").textContent=c.mobile||"";
-  const sales=db.sales.filter(x=>x.customer.toLowerCase()===c.name.toLowerCase());
-  const services=db.services.filter(x=>x.customer.toLowerCase()===c.name.toLowerCase());
-  const amcs=db.amcs.filter(x=>x.customer.toLowerCase()===c.name.toLowerCase());
-  const total=sales.reduce((a,x)=>a+x.total,0), paid=sales.reduce((a,x)=>a+x.paid,0);
-  const pending=sales.reduce((a,x)=>a+x.pending,0);
-  document.getElementById("profileBody").innerHTML=`
-    <div class="cards" style="grid-template-columns:repeat(4,1fr)">
-      <div class="card"><div class="label">Total Sales</div><div class="metric">${money(total)}</div></div>
-      <div class="card"><div class="label">Paid</div><div class="metric">${money(paid)}</div></div>
-      <div class="card"><div class="label">Pending</div><div class="metric">${money(pending)}</div></div>
-      <div class="card"><div class="label">Services</div><div class="metric">${services.length}</div></div>
-    </div>
-    <div class="toolbar">
-      <button class="btn" onclick="callNo('${esc(c.mobile)}')">📞 Call</button>
-      <button class="btn" onclick="customerWhatsApp('${esc(c.mobile)}','${esc(c.name)}')">💬 WhatsApp</button>
-      <button class="btn primary" onclick="closeModal('customerProfileModal');openCustomerService('${esc(c.name)}','${esc(c.mobile)}')">🔧 New Service</button>
-      <button class="btn primary" onclick="closeModal('customerProfileModal');openModal('saleModal');saleCustomer.value='${esc(c.name)}'">💰 New Sale</button>
-      <button class="btn primary" onclick="closeModal('customerProfileModal');openModal('amcModal');amcCustomer.value='${esc(c.name)}'">🔄 New AMC</button>
-    </div>
-    <div class="grid2">
-      <div class="panel">
-        <h3>Customer Details</h3>
-        <p><b>Name:</b> ${esc(c.name)}</p>
-        <p><b>Mobile:</b> ${esc(c.mobile||"-")}</p>
-        <p><b>Product:</b> ${esc(c.product||"-")}</p>
-        <p><b>Purchase:</b> ${esc(c.purchase||"-")}</p>
-        <p><b>Installation:</b> ${esc(c.install||"-")}</p>
-        <p><b>AMC End:</b> ${esc(c.amc||"-")}</p>
-        <p><b>Address:</b> ${esc(c.address||"-")}</p><p><b>Notes:</b> ${esc(c.notes||"-")}</p>
-      </div>
-      <div class="panel">
-        <h3>🧭 Customer Lifecycle</h3>
-        <p><b>Installation:</b> ${esc(c.install||"-")} (${esc(c.installStatus||"Pending")})</p>
-        <p><b>Next Service:</b> ${esc(c.nextService||"-")}</p>
-        <p><b>AMC End:</b> ${esc(c.amc||"-")}</p>
-        <p><b>Payment Pending:</b> ${money(pending)}</p>
-      </div>
-      <div class="panel">
-        <h3>AMC History</h3>
-        ${amcs.length ? amcs.map(a=>`<div class="lead"><b>${money(a.amount)}</b><div class="mini">${esc(a.start||"-")} → ${esc(a.end||"-")} · ${a.visits} visits</div></div>`).join("") : '<div class="empty">No AMC records</div>'}
-      </div>
-    </div>
-    <div class="panel">
-      <h3>Sales & Payments</h3>
-      ${sales.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Product</th><th>Total</th><th>Paid</th><th>Pending</th><th>Mode</th></tr></thead><tbody>${sales.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td><td>${esc(s.mode||"-")}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No sales records</div>'}
-    </div>
-    <div class="panel">
-      <h3>Service History</h3>
-      ${services.length ? `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Problem</th><th>Technician</th><th>Amount</th><th>Follow-up</th><th>Status</th></tr></thead><tbody>${services.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.problem||"-")}</td><td>${esc(s.tech||"-")}</td><td>${money(s.amount||0)}</td><td>${esc(s.follow||"-")}</td><td>${statusBadge(s.status)}</td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No service records</div>'}
-    </div>`;
-  openModal("customerProfileModal");
-}
-
-function convertLead(id){
-  const lead=db.leads.find(x=>x.id===id);
-  if(!lead) return;
-  const exists=db.customers.some(x=>x.mobile===lead.mobile);
-  if(!exists){
-    db.customers.unshift({
-      id:Date.now(), name:lead.name, mobile:lead.mobile,
-      product:lead.product||"", purchase:"", install:"",
-      amc:"", address:lead.notes||"", leadId:lead.id
-    });
-  }
-  lead.status="Won";
-  persist();
-  toast(exists ? "Customer already exists — lead marked Won" : "Lead converted to Customer");
-}
-function customerWhatsApp(n,name){
-  wa(n,"Hello "+name+", thank you for choosing Purixa Water Solution. How can we help you?");
-}
-function openCustomerService(name,mobile){
-  document.getElementById("svcCustomer").value=name;
-  document.getElementById("svcMobile").value=mobile;
+document.getElementById("svcCustomer")?.addEventListener("change",()=>{const c=db.customers.find(x=>x.id===Number(svcCustomer.value));svcMobile.value=c?.mobile||""});
+function openServiceModal(customerId=""){
+  editingServiceId=null;document.getElementById("serviceModalTitle").textContent="New Service Request";
+  fillServiceCustomerOptions(customerId);document.getElementById("svcMobile").value="";document.getElementById("svcProblem").value="";document.getElementById("svcTech").value="";document.getElementById("svcStatus").value="Open";document.getElementById("svcAmount").value="0";document.getElementById("svcDate").value=today;document.getElementById("svcFollow").value="";document.getElementById("svcNotes").value="";
+  if(customerId){const c=db.customers.find(x=>x.id===Number(customerId));if(c)document.getElementById("svcMobile").value=c.mobile||""}
   openModal("serviceModal");
 }
+function openCustomerService(id){const c=db.customers.find(x=>x.id===Number(id));if(!c)return;openServiceModal(c.id)}
+function saveService(e){e.preventDefault();const cid=Number(svcCustomer.value);const c=db.customers.find(x=>x.id===cid);if(!c){toast("Please select a customer");return}const tid=Number(svcTech.value)||null;const tech=db.technicians.find(x=>x.id===tid);const data={customerId:cid,customer:c.name,mobile:c.mobile||"",problem:svcProblem.value||"General Service",tech:tech?.name||"",technicianId:tid,status:svcStatus.value,amount:+svcAmount.value||0,charge:+svcAmount.value||0,date:svcDate.value||today,follow:svcFollow.value,notes:svcNotes.value.trim()};
+  if(editingServiceId){const s=db.services.find(x=>x.id===editingServiceId);if(s)Object.assign(s,data)}else db.services.unshift({id:Date.now(),...data});
+  persist();e.target.reset();closeModal("serviceModal");toast(editingServiceId?"Service updated":"Service saved");editingServiceId=null;
+}
+function editService(id){const s=db.services.find(x=>x.id===id);if(!s)return;editingServiceId=id;document.getElementById("serviceModalTitle").textContent="Edit Service Request";fillServiceCustomerOptions(s.customerId||"");svcMobile.value=s.mobile||db.customers.find(c=>c.id===s.customerId)?.mobile||"";svcProblem.value=s.problem||"General Service";svcTech.value=s.technicianId?String(s.technicianId):"";svcStatus.value=s.status||"Open";svcAmount.value=s.amount??s.charge??0;svcDate.value=s.date||today;svcFollow.value=s.follow||"";svcNotes.value=s.notes||"";openModal("serviceModal")}
+function viewService(id){const s=db.services.find(x=>x.id===id);if(!s)return;const c=db.customers.find(x=>x.id===s.customerId)||{};const t=db.technicians.find(x=>x.id===s.technicianId)||{};document.getElementById("serviceDetail").innerHTML=`<div class="service-card"><h3>${esc(c.name||s.customer||"-")}</h3><p><b>Mobile:</b> ${esc(c.mobile||s.mobile||"-")}</p><p><b>Date:</b> ${esc(s.date||"-")}</p><p><b>Problem:</b> ${esc(s.problem||"-")}</p><p><b>Technician:</b> ${esc(t.name||s.tech||"Unassigned")}</p><p><b>Status:</b> ${statusBadge(s.status||"Open")}</p><p><b>Charge:</b> ${money(s.amount??s.charge??0)}</p><p><b>Follow-up:</b> ${esc(s.follow||"-")}</p><p><b>Details:</b> ${esc(s.notes||"-")}</p><div class="toolbar"><button class="btn primary" onclick="closeModal('serviceDetailModal');editService(${s.id})">✏️ Edit</button><button class="btn" onclick="callNoByService(${s.id})">📞 Call</button><button class="btn" onclick="waByService(${s.id})">💬 WhatsApp</button><button class="btn red" onclick="del('services',${s.id});closeModal('serviceDetailModal')">Delete</button></div></div>`;openModal("serviceDetailModal")}
+function callNoByService(id){const s=db.services.find(x=>x.id===id);callNo(s?.mobile||db.customers.find(c=>c.id===s?.customerId)?.mobile)}
+function waByService(id){const s=db.services.find(x=>x.id===id);wa(s?.mobile||db.customers.find(c=>c.id===s?.customerId)?.mobile,`Hello, this is Purixa Water Solution regarding your service request.`)}
 
+function saveAMC(e){e.preventDefault();db.amcs.unshift({id:Date.now(),customer:amcCustomer.value.trim(),amount:+amcAmount.value||0,start:amcStart.value,end:amcEnd.value,visits:+amcVisits.value||0,nextService:amcNext.value});persist();e.target.reset();closeModal("amcModal");toast("AMC saved")}
+function saveTech(e){e.preventDefault();db.technicians.unshift({id:Date.now(),name:techName.value.trim(),mobile:techMobile.value.trim(),area:techArea.value.trim(),status:techStatus.value});persist();e.target.reset();closeModal("techModal");toast("Technician saved")}
+function callNo(n){if(n)location.href="tel:"+String(n).replace(/\s/g,"")}
+function wa(n,msg="Hello, Purixa Water Solution"){const num=String(n||"").replace(/\D/g,"");if(!num)return toast("Mobile number not available");window.open("https://wa.me/91"+num+"?text="+encodeURIComponent(msg),"_blank")}
+function statusBadge(s){let c=["Completed","Won","Available","Paid","Active"].includes(s)?"green":["Open","New","Assigned","Interested","Quotation","Expiring Soon"].includes(s)?"orange":["Lost","Cancelled","Off Duty","Expired"].includes(s)?"red":"";return `<span class="badge ${c}">${esc(s)}</span>`}
+function salePaymentStatus(s){const total=Number(s.total||0),paid=Number(s.paid||0);return paid>=total?"Paid":paid>0?"Partial":"Pending"}
+function updateSalesBalances(){db.sales.forEach(s=>{s.total=Number(s.total??s.amount??0);s.paid=Number(s.paid||0);s.pending=Math.max(0,s.total-s.paid);s.paymentStatus=salePaymentStatus(s)})}
 
-function daysFromToday(dateStr){
-  if(!dateStr) return null;
-  const d=new Date(dateStr+"T00:00:00");
-  const t=new Date(today+"T00:00:00");
-  return Math.round((d-t)/86400000);
-}
-function reminderClass(days){
-  return days<0 ? "red" : days<=7 ? "red" : days<=15 ? "orange" : "green";
-}
-function renderReminders(){
-  const items=[];
-  db.customers.forEach(c=>{
-    if(c.nextService){
-      const d=daysFromToday(c.nextService);
-      if(d!==null && d<=30) items.push({type:"Service",customer:c.name,mobile:c.mobile,date:c.nextService,days:d,message:`Your Purixa RO service is due on ${c.nextService}.`});
-    }
-    if(c.amc){
-      const d=daysFromToday(c.amc);
-      if(d!==null && d<=30) items.push({type:"AMC Expiry",customer:c.name,mobile:c.mobile,date:c.amc,days:d,message:`Your Purixa AMC is expiring on ${c.amc}. Please contact us for renewal.`});
-    }
-  });
-  db.services.forEach(s=>{
-    if(s.follow){
-      const d=daysFromToday(s.follow);
-      if(d!==null && d<=30 && s.status!=="Completed") items.push({type:"Follow-up",customer:s.customer,mobile:s.mobile,date:s.follow,days:d,message:`Purixa service follow-up is scheduled for ${s.follow}.`});
-    }
-  });
-  items.sort((a,b)=>a.days-b.days);
-  const box=document.getElementById("reminderList");
-  if(!box) return;
-  box.innerHTML=items.length ? `<div class="table-wrap"><table><thead><tr><th>Type</th><th>Customer</th><th>Date</th><th>When</th><th>Action</th></tr></thead><tbody>${items.map((x,i)=>`<tr><td>${statusBadge(x.type)}</td><td><b>${esc(x.customer)}</b><div class="mini">${esc(x.mobile||"-")}</div></td><td>${esc(x.date)}</td><td>${x.days<0?Math.abs(x.days)+" days overdue":x.days===0?"Due today":x.days===7?"7 days left":x.days===15?"15 days left":x.days===30?"30 days left":x.days+" days left"}</td><td><button class="btn" onclick="wa('${esc(x.mobile)}','${esc(x.message)}')">💬 WhatsApp</button> <button class="btn" onclick="callNo('${esc(x.mobile)}')">📞 Call</button></td></tr>`).join("")}</tbody></table></div>` : '<div class="empty">No service, follow-up or AMC reminders in the next 30 days.</div>';
-}
-function sendAllDueWhatsApp(){
-  const customers=[...db.customers].filter(c=>{
-    const s=daysFromToday(c.nextService), a=daysFromToday(c.amc);
-    return (s!==null&&s<=30)||(a!==null&&a<=30);
-  });
-  if(!customers.length){toast("No due customers");return}
-  const first=customers[0];
-  wa(first.mobile,`Hello ${first.name}, this is Purixa Water Solution. Your service/AMC reminder is due. Please contact us.`);
-  toast("WhatsApp opened for first due customer");
-}
+function editCustomer(id){const c=db.customers.find(x=>x.id===id);if(!c)return;editingCustomerId=id;editCustName.value=c.name||"";editCustMobile.value=c.mobile||"";editCustProduct.value=c.product||"";editCustPurchase.value=c.purchase||"";editCustInstall.value=c.install||"";editCustInstallStatus.value=c.installStatus||"Pending";editCustNextService.value=c.nextService||"";editCustAMC.value=c.amc||"";editCustAddress.value=c.address||"";editCustNotes.value=c.notes||"";openModal("editCustomerModal")}
+function saveCustomerEdit(){const c=db.customers.find(x=>x.id===editingCustomerId);if(!c)return;const mobile=editCustMobile.value.trim();if(!editCustName.value.trim()||!mobile){toast("Name and mobile are required");return}if(db.customers.some(x=>x.id!==editingCustomerId&&x.mobile===mobile)){toast("Another customer already uses this mobile");return}Object.assign(c,{name:editCustName.value.trim(),mobile,product:editCustProduct.value.trim(),purchase:editCustPurchase.value,install:editCustInstall.value,installStatus:editCustInstallStatus.value,nextService:editCustNextService.value,amc:editCustAMC.value,address:editCustAddress.value.trim(),notes:editCustNotes.value.trim()});persist();closeModal("editCustomerModal");toast("Customer updated")}
+function customerWhatsAppById(id){const c=db.customers.find(x=>x.id===id);if(c)customerWhatsApp(c.mobile,c.name)}
+function customerCallById(id){const c=db.customers.find(x=>x.id===id);if(c)callNo(c.mobile)}
+function customerWhatsApp(n,name){wa(n,"Hello "+name+", thank you for choosing Purixa Water Solution. How can we help you?")}
+function openCustomerProfile(id){const c=db.customers.find(x=>x.id===id);if(!c)return;document.getElementById("profileName").textContent=c.name;document.getElementById("profileMobile").textContent=c.mobile||"";const sales=db.sales.filter(x=>x.customerId===c.id||String(x.customer||"").toLowerCase()===String(c.name).toLowerCase());const services=db.services.filter(x=>x.customerId===c.id||String(x.customer||"").toLowerCase()===String(c.name).toLowerCase());const amcs=db.amcs.filter(x=>String(x.customer||"").toLowerCase()===String(c.name).toLowerCase());const total=sales.reduce((a,x)=>a+Number(x.total||0),0),paid=sales.reduce((a,x)=>a+Number(x.paid||0),0),pending=sales.reduce((a,x)=>a+Number(x.pending||0),0);document.getElementById("profileBody").innerHTML=`<div class="cards" style="grid-template-columns:repeat(4,1fr)"><div class="card"><div class="label">Total Sales</div><div class="metric">${money(total)}</div></div><div class="card"><div class="label">Paid</div><div class="metric">${money(paid)}</div></div><div class="card"><div class="label">Pending</div><div class="metric">${money(pending)}</div></div><div class="card"><div class="label">Services</div><div class="metric">${services.length}</div></div></div><div class="toolbar"><button class="btn" onclick="customerCallById(${c.id})">📞 Call</button><button class="btn" onclick="customerWhatsAppById(${c.id})">💬 WhatsApp</button><button class="btn primary" onclick="closeModal('customerProfileModal');openCustomerService(${c.id})">🔧 New Service</button><button class="btn primary" onclick="closeModal('customerProfileModal');openSaleForCustomer(${c.id})">💰 New Sale</button><button class="btn primary" onclick="closeModal('customerProfileModal');openAMCForCustomer(${c.id})">🔄 New AMC</button></div><div class="grid2"><div class="panel"><h3>Customer Details</h3><p><b>Name:</b> ${esc(c.name)}</p><p><b>Mobile:</b> ${esc(c.mobile||"-")}</p><p><b>Product:</b> ${esc(c.product||"-")}</p><p><b>Purchase:</b> ${esc(c.purchase||"-")}</p><p><b>Installation:</b> ${esc(c.install||"-")} (${esc(c.installStatus||"Pending")})</p><p><b>AMC End:</b> ${esc(c.amc||"-")}</p><p><b>Next Service:</b> ${esc(c.nextService||"-")}</p><p><b>Address:</b> ${esc(c.address||"-")}</p><p><b>Notes:</b> ${esc(c.notes||"-")}</p></div><div class="panel"><h3>AMC History</h3>${amcs.length?amcs.map(a=>`<div class="lead"><b>${money(a.amount)}</b><div class="mini">${esc(a.start||"-")} → ${esc(a.end||"-")} · ${a.visits} visits</div></div>`).join(""):"<div class='empty'>No AMC records</div>"}</div></div><div class="panel"><h3>Sales & Payments</h3>${sales.length?`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Product</th><th>Total</th><th>Paid</th><th>Pending</th><th>Mode</th><th>Invoice</th></tr></thead><tbody>${sales.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td><td>${esc(s.mode||"-")}</td><td><button class="btn" onclick="viewInvoice(${s.id})">🧾</button></td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No sales records</div>"}</div><div class="panel"><h3>Service History</h3>${services.length?`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Problem</th><th>Technician</th><th>Amount</th><th>Follow-up</th><th>Status</th><th></th></tr></thead><tbody>${services.map(s=>`<tr><td>${esc(s.date)}</td><td>${esc(s.problem||"-")}</td><td>${esc(s.tech||"-")}</td><td>${money(s.amount??s.charge??0)}</td><td>${esc(s.follow||"-")}</td><td>${statusBadge(s.status)}</td><td><button class="btn" onclick="editService(${s.id});closeModal('customerProfileModal')">✏️</button></td></tr>`).join("")}</tbody></table></div>`:"<div class='empty'>No service records</div>"}</div>`;openModal("customerProfileModal")}
+function openSaleForCustomer(id){const c=db.customers.find(x=>x.id===id);if(!c)return;openModal("saleModal");saleCustomer.value=c.name}
+function openAMCForCustomer(id){const c=db.customers.find(x=>x.id===id);if(!c)return;openModal("amcModal");amcCustomer.value=c.name}
+function convertLead(id){const lead=db.leads.find(x=>x.id===id);if(!lead)return;const exists=db.customers.some(x=>x.mobile===lead.mobile);if(!exists)db.customers.unshift({id:Date.now(),name:lead.name,mobile:lead.mobile,product:lead.product||"",purchase:"",install:"",amc:"",address:lead.notes||"",notes:"",leadId:lead.id});lead.status="Won";persist();toast(exists?"Customer already exists — lead marked Won":"Lead converted to Customer")}
 
-function renderDashboard(){
- document.getElementById("mLeads").textContent=db.leads.length;
- document.getElementById("mCustomers").textContent=db.customers.length;
- document.getElementById("mSales").textContent=money(db.sales.reduce((a,x)=>a+x.total,0));
- document.getElementById("mPending").textContent=money(db.sales.reduce((a,x)=>a+x.pending,0));
- document.getElementById("mService").textContent=db.services.filter(x=>!["Completed","Cancelled"].includes(x.status)).length;
- document.getElementById("mAMC").textContent=db.amcs.filter(x=>x.end && x.end<=new Date(Date.now()+30*864e5).toISOString().slice(0,10)).length;
- document.getElementById("mFollow").textContent=db.leads.filter(x=>x.follow===today && x.status!=="Lost").length;
- document.getElementById("mTech").textContent=db.technicians.length;
- document.getElementById("mDue").textContent=db.services.filter(x=>x.follow&&x.follow<=today&&x.status!=="Completed").length+db.customers.filter(x=>x.nextService&&x.nextService<=today).length;
- document.getElementById("mAMC30").textContent=db.customers.filter(x=>{const d=daysFromToday(x.amc);return d!==null&&d>=0&&d<=30}).length+db.amcs.filter(x=>{const d=daysFromToday(x.end);return d!==null&&d>=0&&d<=30}).length;
- let f=db.leads.filter(x=>x.follow===today).slice(0,8);
- document.getElementById("todayFollow").innerHTML=f.length?f.map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product)} · ${statusBadge(x.status)}</div><div class="toolbar" style="margin:7px 0 0"><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞 Call</button><button class="btn" onclick="wa('${esc(x.mobile)}')">💬 WhatsApp</button></div></div>`).join(""):`<div class="empty">No follow-ups today</div>`;
- let s=db.services.slice(0,6);
- document.getElementById("recentService").innerHTML=s.length?s.map(x=>`<div class="lead"><b>${esc(x.customer)}</b><div class="mini">${esc(x.problem||"General Service")} · ${statusBadge(x.status)}</div></div>`).join(""):`<div class="empty">No service requests</div>`;
-}
-function renderLeads(){
- let q=(document.getElementById("leadSearch")?.value||"").toLowerCase(), arr=db.leads.filter(x=>(x.name+x.mobile+x.product+x.source).toLowerCase().includes(q));
- let stages=["New","Contacted","Interested","Site Visit","Quotation","Negotiation","Won","Lost"];
- document.getElementById("pipeline").innerHTML=stages.map(st=>`<div class="stage"><h4>${st} <span class="mini">(${arr.filter(x=>x.status===st).length})</span></h4>${arr.filter(x=>x.status===st).slice(0,12).map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product||"")}</div><div class="mini">${esc(x.mobile)}</div><div class="toolbar" style="margin:6px 0 0"><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button><button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button><button class="btn green" onclick="convertLead(${x.id})">→ Customer</button></div></div>`).join("")||`<div class="mini">No leads</div>`}</div>`).join("");
-}
-function renderCustomers(){
- let q=(document.getElementById("customerSearch")?.value||"").toLowerCase();
- let arr=db.customers.filter(x=>(x.name+x.mobile+x.product+x.address).toLowerCase().includes(q));
- document.getElementById("customerTable").innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address)}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button> <button class="btn" onclick="wa('${esc(x.mobile)}')">💬</button></td><td>${esc(x.product)}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn primary" onclick="openCustomerProfile(${x.id})">👤 View</button> <button class="btn" onclick="editCustomer(${x.id})">✏️ Edit</button> <button class="btn" onclick="customerWhatsApp('${esc(x.mobile)}','${esc(x.name)}')">💬</button> <button class="btn" onclick="openCustomerService('${esc(x.name)}','${esc(x.mobile)}')">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`;
-}
-function renderSales(){
-  updateSalesBalances();
-  const box=document.getElementById("salesList")||document.getElementById("salesTable");
-  if(!box)return;
-  const sales=db.sales||[];
-  if(!sales.length){box.innerHTML='<div class="empty">No sales yet.</div>';return}
-  box.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Total</th><th>Paid</th><th>Pending</th><th>Status</th><th>Actions</th></tr></thead><tbody>
-  ${sales.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{}; return `<tr>
-  <td>${esc(s.date||"-")}</td><td><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(c.mobile||s.mobile||"")}</div></td>
-  <td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td>
-  <td>${statusBadge(s.paymentStatus)}</td>
-  <td><button class="btn" onclick="viewInvoice(${s.id})">🧾 Invoice</button></td></tr>`}).join("")}</tbody></table></div>`;
-}
-function renderService(){
- let q=(document.getElementById("serviceSearch")?.value||"").toLowerCase(),arr=db.services.filter(x=>(x.customer+x.mobile+x.problem+x.tech+x.status).toLowerCase().includes(q));
- document.getElementById("serviceTable").innerHTML=arr.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.customer)}<div class="mini">${esc(x.mobile)}</div></td><td>${esc(x.problem)}</td><td>${esc(x.tech||"-")}</td><td>${statusBadge(x.status)}</td><td><button class="btn" onclick="wa('${esc(x.mobile)}','Your Purixa service status is: ${esc(x.status)}')">WhatsApp</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No services found</td></tr>`;
-}
-function renderAMC(){
- document.getElementById("amcTable").innerHTML=db.amcs.map(x=>{let expired=x.end&&x.end<today;return `<tr><td>${esc(x.customer)}</td><td>${esc(x.start||"-")}</td><td>${esc(x.end||"-")}</td><td>${money(x.amount)}</td><td>${x.visits}</td><td>${statusBadge(expired?"Expired":(x.end&&x.end<=new Date(Date.now()+30*864e5).toISOString().slice(0,10)?"Expiring Soon":"Active"))}</td></tr>`}).join("")||`<tr><td colspan="6" class="empty">No AMC records</td></tr>`;
-}
-function renderTech(){
- document.getElementById("techTable").innerHTML=db.technicians.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.mobile)} <button class="btn" onclick="callNo('${esc(x.mobile)}')">📞</button></td><td>${esc(x.area)}</td><td>${statusBadge(x.status)}</td><td>${db.services.filter(s=>s.tech===x.name&&!["Completed","Cancelled"].includes(s.status)).length}</td></tr>`).join("")||`<tr><td colspan="5" class="empty">No technicians</td></tr>`;
-}
-function renderReports(){
- let total=db.leads.length,won=db.leads.filter(x=>x.status==="Won").length;
- document.getElementById("rConversion").textContent=(total?Math.round(won/total*100):0)+"%";
- document.getElementById("rCollected").textContent=money(db.sales.reduce((a,x)=>a+x.paid,0));
- document.getElementById("rService").textContent=money(db.services.filter(x=>x.status==="Completed").reduce((a,x)=>a+(+x.amount||0),0));
- document.getElementById("rAMC").textContent=money(db.amcs.reduce((a,x)=>a+x.amount,0));
- document.getElementById("reportSummary").innerHTML=`<p><b>Leads:</b> ${total}</p><p><b>Won:</b> ${won}</p><p><b>Customers:</b> ${db.customers.length}</p><p><b>Total Sales:</b> ${money(db.sales.reduce((a,x)=>a+x.total,0))}</p><p><b>Pending:</b> ${money(db.sales.reduce((a,x)=>a+x.pending,0))}</p><p><b>Services:</b> ${db.services.length}</p><p><b>AMC:</b> ${db.amcs.length}</p>`;
-}
-function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSales();renderService();renderAMC();renderTech();renderReports();renderReminders()}
-function del(type,id){if(confirm("Delete this record?")){db[type]=db[type].filter(x=>x.id!==id);persist();toast("Deleted")}}
-function exportData(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="purixa-crm-backup.json";a.click()}
-function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);persist();toast("Backup imported")}catch{toast("Invalid backup")}};r.readAsText(f)}
-function resetData(){if(confirm("Reset all CRM data?")){db={leads:[],customers:[],sales:[],services:[],amcs:[],technicians:[]};persist();toast("CRM reset")}}
+function daysFromToday(dateStr){if(!dateStr)return null;const d=new Date(dateStr+"T00:00:00"),t=new Date(today+"T00:00:00");return Math.round((d-t)/86400000)}
+function reminderClass(days){return days<0?"red":days<=7?"red":days<=15?"orange":"green"}
+function getReminderItems(){const items=[];db.customers.forEach(c=>{if(c.nextService){const d=daysFromToday(c.nextService);if(d!==null&&d<=30)items.push({type:"Service",customer:c.name,mobile:c.mobile,date:c.nextService,days:d,message:`Your Purixa RO service is due on ${c.nextService}.`})}if(c.amc){const d=daysFromToday(c.amc);if(d!==null&&d<=30)items.push({type:"AMC Expiry",customer:c.name,mobile:c.mobile,date:c.amc,days:d,message:`Your Purixa AMC is expiring on ${c.amc}. Please contact us for renewal.`})}});db.services.forEach(s=>{if(s.follow){const d=daysFromToday(s.follow);if(d!==null&&d<=30&&s.status!=="Completed")items.push({type:"Follow-up",customer:s.customer||db.customers.find(c=>c.id===s.customerId)?.name||"Customer",mobile:s.mobile||db.customers.find(c=>c.id===s.customerId)?.mobile||"",date:s.follow,days:d,message:`Purixa service follow-up is scheduled for ${s.follow}.`})}});return items.sort((a,b)=>a.days-b.days)}
+function renderReminders(){const box=document.getElementById("reminderList");if(!box)return;const items=getReminderItems();box.innerHTML=items.length?`<div class="table-wrap"><table><thead><tr><th>Type</th><th>Customer</th><th>Date</th><th>When</th><th>Action</th></tr></thead><tbody>${items.map((x,i)=>`<tr><td>${statusBadge(x.type)}</td><td><b>${esc(x.customer)}</b><div class="mini">${esc(x.mobile||"-")}</div></td><td>${esc(x.date)}</td><td>${x.days<0?Math.abs(x.days)+" days overdue":x.days===0?"Due today":x.days+" days left"}</td><td><button class="btn" onclick="reminderWhatsApp(${i})">💬 WhatsApp</button> <button class="btn" onclick="reminderCall(${i})">📞 Call</button></td></tr>`).join("")}</tbody></table></div>`:`<div class="empty">No service, follow-up or AMC reminders in the next 30 days.</div>`}
+function reminderWhatsApp(i){const x=getReminderItems()[i];if(x)wa(x.mobile,x.message)}
+function reminderCall(i){const x=getReminderItems()[i];if(x)callNo(x.mobile)}
+function sendAllDueWhatsApp(){const x=getReminderItems()[0];if(!x){toast("No due customers");return}wa(x.mobile,x.message);toast("WhatsApp opened for first due customer")}
+
+function renderDashboard(){mLeads.textContent=db.leads.length;mCustomers.textContent=db.customers.length;mSales.textContent=money(db.sales.reduce((a,x)=>a+Number(x.total||0),0));mPending.textContent=money(db.sales.reduce((a,x)=>a+Number(x.pending||0),0));mService.textContent=db.services.filter(x=>!["Completed","Cancelled"].includes(x.status)).length;mAMC.textContent=db.amcs.filter(x=>x.end&&x.end<=new Date(Date.now()+30*864e5).toISOString().slice(0,10)).length;mFollow.textContent=db.leads.filter(x=>x.follow===today&&x.status!=="Lost").length;mTech.textContent=db.technicians.length;mDue.textContent=db.services.filter(x=>x.follow&&x.follow<=today&&x.status!=="Completed").length+db.customers.filter(x=>x.nextService&&x.nextService<=today).length;mAMC30.textContent=db.customers.filter(x=>{const d=daysFromToday(x.amc);return d!==null&&d>=0&&d<=30}).length+db.amcs.filter(x=>{const d=daysFromToday(x.end);return d!==null&&d>=0&&d<=30}).length;const f=db.leads.filter(x=>x.follow===today).slice(0,8);todayFollow.innerHTML=f.length?f.map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product)} · ${statusBadge(x.status)}</div><div class="toolbar" style="margin:7px 0 0"><button class="btn" onclick="leadCall(${x.id})">📞 Call</button><button class="btn" onclick="leadWhatsApp(${x.id})">💬 WhatsApp</button></div></div>`).join(""):"<div class='empty'>No follow-ups today</div>";const s=db.services.slice(0,6);recentService.innerHTML=s.length?s.map(x=>`<div class="lead"><b>${esc(x.customer||"Customer")}</b><div class="mini">${esc(x.problem||"General Service")} · ${statusBadge(x.status)}</div></div>`).join(""):"<div class='empty'>No service requests</div>"}
+function leadCall(id){const x=db.leads.find(x=>x.id===id);if(x)callNo(x.mobile)}
+function leadWhatsApp(id){const x=db.leads.find(x=>x.id===id);if(x)wa(x.mobile,"Hello "+x.name+", this is Purixa Water Solution. How can we help you?")}
+function renderLeads(){const q=(leadSearch?.value||"").toLowerCase(),arr=db.leads.filter(x=>(x.name+x.mobile+x.product+x.source).toLowerCase().includes(q)),stages=["New","Contacted","Interested","Site Visit","Quotation","Negotiation","Won","Lost"];pipeline.innerHTML=stages.map(st=>`<div class="stage"><h4>${st} <span class="mini">(${arr.filter(x=>x.status===st).length})</span></h4>${arr.filter(x=>x.status===st).slice(0,12).map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product||"")}</div><div class="mini">${esc(x.mobile)}</div><div class="toolbar" style="margin:6px 0 0"><button class="btn" onclick="leadCall(${x.id})">📞</button><button class="btn" onclick="leadWhatsApp(${x.id})">💬</button>${x.status!=="Won"?`<button class="btn green" onclick="convertLead(${x.id})">→ Customer</button>`:""}</div></div>`).join("")||`<div class="mini">No leads</div>`}</div>`).join("")}
+function renderCustomers(){const q=(customerSearch?.value||"").toLowerCase(),arr=db.customers.filter(x=>(x.name+x.mobile+x.product+x.address).toLowerCase().includes(q));customerTable.innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address||"")}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="customerCallById(${x.id})">📞</button> <button class="btn" onclick="customerWhatsAppById(${x.id})">💬</button></td><td>${esc(x.product||"-")}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn primary" onclick="openCustomerProfile(${x.id})">👤 View</button> <button class="btn" onclick="editCustomer(${x.id})">✏️ Edit</button> <button class="btn" onclick="openCustomerService(${x.id})">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`}
+function renderSales(){updateSalesBalances();const box=document.getElementById("salesTable");if(!box)return;box.innerHTML=db.sales.length?db.sales.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};return `<tr><td>${esc(s.date||"-")}</td><td><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(c.mobile||s.mobile||"")}</div></td><td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td><td>${statusBadge(s.paymentStatus)}</td><td><button class="btn" onclick="viewInvoice(${s.id})">🧾 Invoice</button></td></tr>`}).join(""): `<tr><td colspan="8" class="empty">No sales yet.</td></tr>`}
+function renderServices(){const q=(document.getElementById("serviceSearch")?.value||"").toLowerCase();const arr=db.services.filter(s=>(s.customer+s.mobile+s.problem+s.tech+s.status).toLowerCase().includes(q));const box=document.getElementById("serviceList");if(!box)return;box.innerHTML=arr.length?arr.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};const mobile=c.mobile||s.mobile||"";return `<div class="service-card"><div class="row"><div><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(mobile)} • ${esc(s.problem||"Service")}</div></div>${statusBadge(s.status||"Open")}</div><div class="mini">📅 ${esc(s.date||"-")} • 👨‍🔧 ${esc(s.tech||"Unassigned")} • 💰 ${money(s.amount??s.charge??0)}${s.follow?` • 🔔 Follow-up ${esc(s.follow)}`:""}</div><div class="mini" style="margin-top:7px">${esc(s.notes||"")}</div><div class="toolbar" style="margin:8px 0 0"><button class="btn" onclick="viewService(${s.id})">👁 View</button><button class="btn" onclick="editService(${s.id})">✏️ Edit</button><button class="btn" onclick="waByService(${s.id})">💬 WhatsApp</button><button class="btn red" onclick="del('services',${s.id})">Delete</button></div></div>`}).join(""):`<div class="empty">No service requests found.</div>`}
+function renderAMC(){amcTable.innerHTML=db.amcs.map(x=>{const expired=x.end&&x.end<today;return `<tr><td>${esc(x.customer)}</td><td>${esc(x.start||"-")}</td><td>${esc(x.end||"-")}</td><td>${money(x.amount)}</td><td>${x.visits}</td><td>${statusBadge(expired?"Expired":(x.end&&x.end<=new Date(Date.now()+30*864e5).toISOString().slice(0,10)?"Expiring Soon":"Active"))}</td><td><button class="btn red" onclick="del('amcs',${x.id})">Delete</button></td></tr>`}).join("")||`<tr><td colspan="7" class="empty">No AMC records</td></tr>`}
+function renderTech(){techTable.innerHTML=db.technicians.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.mobile)} <button class="btn" onclick="callNo('${String(x.mobile||"").replace(/'/g,"\\'")}')">📞</button></td><td>${esc(x.area)}</td><td>${statusBadge(x.status)}</td><td>${db.services.filter(s=>(s.technicianId===x.id||s.tech===x.name)&&!["Completed","Cancelled"].includes(s.status)).length}</td><td><button class="btn red" onclick="del('technicians',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No technicians</td></tr>`}
+function renderReports(){const total=db.leads.length,won=db.leads.filter(x=>x.status==="Won").length;rConversion.textContent=(total?Math.round(won/total*100):0)+"%";rCollected.textContent=money(db.sales.reduce((a,x)=>a+Number(x.paid||0),0));rService.textContent=money(db.services.filter(x=>x.status==="Completed").reduce((a,x)=>a+Number(x.amount??x.charge??0),0));rAMC.textContent=money(db.amcs.reduce((a,x)=>a+Number(x.amount||0),0));reportSummary.innerHTML=`<p><b>Leads:</b> ${total}</p><p><b>Won:</b> ${won}</p><p><b>Customers:</b> ${db.customers.length}</p><p><b>Total Sales:</b> ${money(db.sales.reduce((a,x)=>a+Number(x.total||0),0))}</p><p><b>Pending:</b> ${money(db.sales.reduce((a,x)=>a+Number(x.pending||0),0))}</p><p><b>Services:</b> ${db.services.length}</p><p><b>AMC:</b> ${db.amcs.length}</p>`}
+
+function viewInvoice(saleId){const s=db.sales.find(x=>x.id===saleId);if(!s){toast("Sale not found");return}const c=db.customers.find(x=>x.id===s.customerId)||{};currentInvoiceMobile=c.mobile||s.mobile||"";openInvoice(saleId)}
+function openInvoice(saleId){const s=db.sales.find(x=>x.id===saleId);if(!s){toast("Sale not found");return}const c=db.customers.find(x=>x.id===s.customerId)||{};const paid=Number(s.paid||0),total=Number(s.total||0),pending=Math.max(0,total-paid);const inv=s.invoiceNo||("PWS-"+String(saleId).padStart(5,"0"));s.invoiceNo=inv;localStorage.setItem(KEY,JSON.stringify(db));document.getElementById("invoicePreview").innerHTML=`<div class="inv-head"><div><h2>PURIXA WATER SOLUTION</h2><div>Water Purifier • RO Sales • Service • AMC</div></div><div><b>Invoice No:</b> ${esc(inv)}<br><b>Date:</b> ${esc(s.date||today)}</div></div><p><b>Customer:</b> ${esc(c.name||s.customer||"-")}<br><b>Mobile:</b> ${esc(c.mobile||s.mobile||"-")}<br><b>Address:</b> ${esc(c.address||"-")}</p><table><thead><tr><th>Product / Description</th><th>Qty</th><th>Amount</th></tr></thead><tbody><tr><td>${esc(s.product||"RO Purifier")}</td><td>1</td><td>${money(total)}</td></tr></tbody></table><div class="totals"><div><b>Total</b><b>${money(total)}</b></div><div>Paid <span>${money(paid)}</span></div><div><b>Pending</b><b>${money(pending)}</b></div></div><p style="margin-top:24px">Thank you for choosing Purixa Water Solution.</p>`;openModal("invoiceModal")}
+function shareInvoiceWhatsApp(){const text=document.getElementById("invoicePreview").innerText;wa(currentInvoiceMobile,text)}
+
+function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSales();renderServices();renderAMC();renderTech();renderReports();renderReminders()}
+function del(type,id){if(!confirm("Delete this record?"))return;db[type]=db[type].filter(x=>x.id!==id);persist();toast("Deleted")}
+function exportData(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="purixa-crm-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const imported=JSON.parse(r.result);db=Object.assign(emptyDB(),imported);db.services=db.services.map(s=>normalizeService(s,db));persist();toast("Backup imported")}catch{toast("Invalid backup")}};r.readAsText(f);e.target.value=""}
+function resetData(){if(confirm("Reset all CRM data? This will remove all saved records in this browser.")){db=emptyDB();persist();toast("CRM reset")}}
 renderAll();
 setInterval(renderReminders,60000);
-
-function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
-function openInvoice(saleId){
-  const s=(db.sales||[]).find(x=>x.id===saleId); if(!s){toast("Sale not found");return}
-  const c=(db.customers||[]).find(x=>x.id===s.customerId)||{};
-  const paid=Number(s.paid||0), total=Number(s.total||0), pending=Math.max(0,total-paid);
-  const inv=s.invoiceNo||("PWS-"+String(saleId).padStart(5,"0"));
-  s.invoiceNo=inv; persist();
-  document.getElementById("invoicePreview").innerHTML=`
-    <div class="inv-head"><div><h2>PURIXA WATER SOLUTION</h2><div>Water Purifier • RO Sales • Service • AMC</div></div>
-    <div><b>Invoice No:</b> ${esc(inv)}<br><b>Date:</b> ${esc(s.date||today)}</div></div>
-    <p><b>Customer:</b> ${esc(c.name||s.customer||"-")}<br><b>Mobile:</b> ${esc(c.mobile||s.mobile||"-")}<br><b>Address:</b> ${esc(c.address||"-")}</p>
-    <table><thead><tr><th>Product / Description</th><th>Qty</th><th>Amount</th></tr></thead>
-    <tbody><tr><td>${esc(s.product||"RO Purifier")}</td><td>1</td><td>${money(total)}</td></tr></tbody></table>
-    <div class="totals"><div><b>Total</b><b>${money(total)}</b></div><div>Paid <span>${money(paid)}</span></div><div><b>Pending</b><b>${money(pending)}</b></div></div>
-    <p style="margin-top:24px">Thank you for choosing Purixa Water Solution.</p>`;
-  openModal("invoiceModal");
-}
-function shareInvoiceWhatsApp(){
-  const text=document.getElementById("invoicePreview").innerText;
-  const mobile=(window.currentInvoiceMobile||"").replace(/\D/g,"");
-  const url="https://wa.me/"+(mobile?("91"+mobile):"")+"?text="+encodeURIComponent(text);
-  window.open(url,"_blank");
-}
-function viewInvoice(saleId){
-  const s=(db.sales||[]).find(x=>x.id===saleId); const c=(db.customers||[]).find(x=>x.id===s?.customerId)||{};
-  window.currentInvoiceMobile=c.mobile||s?.mobile||"";
-  openInvoice(saleId);
-}
-function salePaymentStatus(s){
-  const total=Number(s.total||0), paid=Number(s.paid||0);
-  return paid>=total ? "Paid" : paid>0 ? "Partial" : "Pending";
-}
-function updateSalesBalances(){
-  (db.sales||[]).forEach(s=>{s.paid=Number(s.paid||0);s.pending=Math.max(0,Number(s.total||0)-s.paid);s.paymentStatus=salePaymentStatus(s);});
-}
-
-
-function ensureServiceData(){db.services=db.services||[];db.technicians=db.technicians||[]}
-function fillServiceCustomerOptions(){
- const s=document.getElementById("svcCustomer"); if(!s)return;
- s.innerHTML=(db.customers||[]).map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile||"")}</option>`).join("");
- const t=document.getElementById("svcTechnician"); if(t)t.innerHTML='<option value="">Unassigned</option>'+(db.technicians||[]).map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
- const d=document.getElementById("svcDate"); if(d&&!d.value)d.value=today;
-}
-function openServiceModal(customerId){
- ensureServiceData(); fillServiceCustomerOptions();
- if(customerId){const s=document.getElementById("svcCustomer");if(s)s.value=customerId}
- openModal("serviceModal");
-}
-function saveServiceRequest(){
- ensureServiceData();
- const cid=Number(document.getElementById("svcCustomer").value), c=db.customers.find(x=>x.id===cid);
- if(!c){toast("Please select a customer");return}
- db.services.unshift({id:Date.now(),customerId:cid,date:document.getElementById("svcDate").value||today,type:document.getElementById("svcType").value,technicianId:Number(document.getElementById("svcTechnician").value)||null,status:document.getElementById("svcStatus").value,charge:Number(document.getElementById("svcCharge").value)||0,notes:document.getElementById("svcNotes").value.trim()});
- persist();closeModal("serviceModal");renderServices();toast("Service request saved");
-}
-function renderServices(){
- const box=document.getElementById("serviceList")||document.getElementById("serviceTable");if(!box)return;
- const arr=db.services||[];
- if(!arr.length){box.innerHTML='<div class="empty">No service requests yet.</div>';return}
- box.innerHTML=arr.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};const t=db.technicians.find(x=>x.id===s.technicianId)||{};
- return `<div class="service-card"><div class="row"><div><b>${esc(c.name||"-")}</b><div class="mini">${esc(c.mobile||"")} • ${esc(s.type||"Service")}</div></div><b>${esc(s.status||"Open")}</b></div><div class="mini">📅 ${esc(s.date||"-")} • 👨‍🔧 ${esc(t.name||"Unassigned")} • 💰 ${money(s.charge||0)}</div><div class="toolbar"><button class="btn" onclick="viewService(${s.id})">View</button></div></div>`}).join("");
-}
-function viewService(id){
- const s=(db.services||[]).find(x=>x.id===id);if(!s)return;const c=db.customers.find(x=>x.id===s.customerId)||{};const t=db.technicians.find(x=>x.id===s.technicianId)||{};
- document.getElementById("serviceDetail").innerHTML=`<div class="service-card"><h3>${esc(c.name||"-")}</h3><p><b>Mobile:</b> ${esc(c.mobile||"-")}</p><p><b>Date:</b> ${esc(s.date||"-")}</p><p><b>Type:</b> ${esc(s.type||"-")}</p><p><b>Technician:</b> ${esc(t.name||"Unassigned")}</p><p><b>Status:</b> ${esc(s.status||"-")}</p><p><b>Charge:</b> ${money(s.charge||0)}</p><p><b>Details:</b> ${esc(s.notes||"-")}</p></div>`;
- openModal("serviceDetailModal");
-}
-
-</script>
-<script>
-/* ===============================
-   PURIXA CRM SERVICE MODULE FIX
-   =============================== */
-
-(function(){
-
-  // Make Service a proper page
-  const servicePage = document.getElementById("service");
-  if(servicePage){
-    servicePage.classList.add("page");
-
-    servicePage.innerHTML = `
-  <div class="top">
-    <div>
-      <h1>Service</h1>
-      <p>Purixa Water Solution — Service Management</p>
-    </div>
-    <button class="btn primary" onclick="openServiceModal()">
-      ＋ New Service
-    </button>
-  </div>
-
-  <div class="panel">
-    <div class="toolbar">
-      <input
-        class="search"
-        id="serviceSearch"
-        placeholder="Search customer or service..."
-        oninput="renderServices()"
-      >
-    </div>
-
-    <div id="serviceList"></div>
-  </div>
-`;
-  }
-
-
-  // Replace old Service Modal
-  const oldServiceModal = document.getElementById("serviceModal");
-
-  if(oldServiceModal){
-    oldServiceModal.innerHTML = `
-      <div class="modal-box">
-
-        <div class="modal-head">
-          <h3>New Service Request</h3>
-          <button class="close" onclick="closeModal('serviceModal')">×</button>
-        </div>
-
-        <form onsubmit="saveServiceRequest(event)">
-
-          <div class="form-grid">
-
-            <div class="field">
-              <label>Customer *</label>
-              <select id="svcCustomer" required onchange="serviceCustomerChanged()">
-                <option value="">Select Customer</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Mobile</label>
-              <input id="svcMobile" type="tel" readonly>
-            </div>
-
-            <div class="field">
-              <label>Problem / Service Type *</label>
-              <select id="svcType" required>
-                <option value="">Select Service</option>
-                <option>General Service</option>
-                <option>Filter Change</option>
-                <option>Pump Problem</option>
-                <option>Water Leakage</option>
-                <option>Low Water Flow</option>
-                <option>RO Not Working</option>
-                <option>Installation</option>
-                <option>AMC Service</option>
-                <option>Other</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Technician</label>
-              <select id="svcTechnician">
-                <option value="">Unassigned</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Status</label>
-              <select id="svcStatus">
-                <option>Open</option>
-                <option>Assigned</option>
-                <option>On The Way</option>
-                <option>In Progress</option>
-                <option>Completed</option>
-                <option>Cancelled</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Service Amount</label>
-              <input id="svcCharge" type="number" min="0" value="0">
-            </div>
-
-            <div class="field">
-              <label>Next Follow-up</label>
-              <input id="svcFollow" type="date">
-            </div>
-
-            <div class="field full">
-              <label>Notes</label>
-              <textarea id="svcNotes" rows="3"
-                placeholder="Service details / parts required / customer complaint"></textarea>
-            </div>
-
-          </div>
-
-          <div class="actions">
-            <button type="button"
-              class="btn"
-              onclick="closeModal('serviceModal')">
-              Cancel
-            </button>
-
-            <button type="submit" class="btn primary">
-              💾 Save Service
-            </button>
-          </div>
-
-        </form>
-      </div>
-    `;
-  }
-
-
-  // Create Service Detail Modal if missing
-  if(!document.getElementById("serviceDetailModal")){
-
-    const m = document.createElement("div");
-
-    m.className = "modal";
-    m.id = "serviceDetailModal";
-
-    m.innerHTML = `
-      <div class="modal-box">
-
-        <div class="modal-head">
-          <h3>🔧 Service Details</h3>
-          <button class="close"
-            onclick="closeModal('serviceDetailModal')">×</button>
-        </div>
-
-        <div id="serviceDetail"></div>
-
-      </div>
-    `;
-
-    document.body.appendChild(m);
-  }
-
-
-  // Ensure database arrays exist
-  function ensureServiceData(){
-    db.services = db.services || [];
-    db.technicians = db.technicians || [];
-    db.customers = db.customers || [];
-  }
-
-
-  // Fill customer + technician dropdowns
-  function fillServiceCustomerOptions(){
-
-    ensureServiceData();
-
-    const customerSelect =
-      document.getElementById("svcCustomer");
-
-    const techSelect =
-      document.getElementById("svcTechnician");
-
-    if(!customerSelect) return;
-
-    customerSelect.innerHTML =
-      `<option value="">Select Customer</option>` +
-
-      db.customers.map(c => `
-        <option value="${c.id}">
-          ${esc(c.name)} — ${esc(c.mobile || "")}
-        </option>
-      `).join("");
-
-
-    if(techSelect){
-
-      techSelect.innerHTML =
-        `<option value="">Unassigned</option>` +
-
-        db.technicians.map(t => `
-          <option value="${t.id}">
-            ${esc(t.name)} — ${esc(t.mobile || "")}
-          </option>
-        `).join("");
-    }
-  }
-
-
-  // Customer select -> automatic mobile number
-  window.serviceCustomerChanged = function(){
-
-    const id =
-      Number(document.getElementById("svcCustomer")?.value);
-
-    const c =
-      db.customers.find(x => x.id === id);
-
-    const mobile =
-      document.getElementById("svcMobile");
-
-    if(mobile){
-      mobile.value = c?.mobile || "";
-    }
-  };
-
-
-  // Open Service Modal
-  window.openServiceModal = function(customerId){
-
-    ensureServiceData();
-
-    fillServiceCustomerOptions();
-
-    const form =
-      document.querySelector("#serviceModal form");
-
-    if(form) form.reset();
-
-    const status =
-      document.getElementById("svcStatus");
-
-    if(status) status.value = "Open";
-
-    const amount =
-      document.getElementById("svcCharge");
-
-    if(amount) amount.value = 0;
-
-
-    const select =
-      document.getElementById("svcCustomer");
-
-    if(customerId && select){
-
-      select.value = String(customerId);
-
-      serviceCustomerChanged();
-    }
-
-    openModal("serviceModal");
-  };
-
-
-  // Customer profile -> New Service
-  window.openCustomerService = function(name,mobile){
-
-    ensureServiceData();
-
-    const c =
-      db.customers.find(x =>
-        x.name === name ||
-        x.mobile === mobile
-      );
-
-    if(c){
-
-      openServiceModal(c.id);
-
-    }else{
-
-      openServiceModal();
-
-      const mobileBox =
-        document.getElementById("svcMobile");
-
-      if(mobileBox){
-        mobileBox.value = mobile || "";
-      }
-    }
-  };
-
-
-  // Save Service
-  window.saveServiceRequest = function(e){
-
-    if(e) e.preventDefault();
-
-    ensureServiceData();
-
-    const customerId =
-      Number(document.getElementById("svcCustomer").value);
-
-    const customer =
-      db.customers.find(x => x.id === customerId);
-
-
-    if(!customer){
-
-      toast("Please select a customer");
-
-      return;
-    }
-
-
-    const type =
-      document.getElementById("svcType").value;
-
-    if(!type){
-
-      toast("Please select service type");
-
-      return;
-    }
-
-
-    const technicianId =
-      Number(
-        document.getElementById("svcTechnician").value
-      ) || null;
-
-    const technician =
-      db.technicians.find(x => x.id === technicianId);
-
-
-    const charge =
-      Number(
-        document.getElementById("svcCharge").value
-      ) || 0;
-
-
-    const service = {
-
-      id: Date.now(),
-
-      customerId: customer.id,
-
-      customer: customer.name,
-
-      mobile: customer.mobile || "",
-
-      date: today,
-
-      type: type,
-
-      problem: type,
-
-      technicianId: technicianId,
-
-      tech: technician?.name || "",
-
-      status:
-        document.getElementById("svcStatus").value,
-
-      charge: charge,
-
-      amount: charge,
-
-      follow:
-        document.getElementById("svcFollow").value,
-
-      notes:
-        document.getElementById("svcNotes").value.trim()
-
-    };
-
-
-    db.services.unshift(service);
-
-    persist();
-
-    closeModal("serviceModal");
-
-    renderServices();
-
-    toast("✅ Service saved successfully");
-  };
-
-
-  // Render Service List
-  window.renderServices = function(){
-
-    ensureServiceData();
-
-    const box =
-      document.getElementById("serviceList");
-
-    if(!box) return;
-
-
-    const q =
-      (
-        document.getElementById("serviceSearch")?.value ||
-        ""
-      ).toLowerCase();
-
-
-    const arr =
-      db.services.filter(s => {
-
-        const c =
-          db.customers.find(x =>
-            x.id === s.customerId
-          );
-
-        const customerName =
-          c?.name ||
-          s.customer ||
-          "";
-
-        const mobile =
-          c?.mobile ||
-          s.mobile ||
-          "";
-
-        const type =
-          s.type ||
-          s.problem ||
-          "";
-
-        const tech =
-          s.tech ||
-          "";
-
-        return (
-          customerName +
-          mobile +
-          type +
-          tech +
-          (s.status || "")
-        ).toLowerCase().includes(q);
-      });
-
-
-    if(!arr.length){
-
-      box.innerHTML = `
-        <div class="empty">
-          No service requests found.
-        </div>
-      `;
-
-      return;
-    }
-
-
-    box.innerHTML = arr.map(s => {
-
-      const c =
-        db.customers.find(x =>
-          x.id === s.customerId
-        ) || {};
-
-
-      const t =
-        db.technicians.find(x =>
-          x.id === s.technicianId
-        ) || {};
-
-
-      const customerName =
-        c.name || s.customer || "-";
-
-      const mobile =
-        c.mobile || s.mobile || "";
-
-      const serviceType =
-        s.type || s.problem || "Service";
-
-      const technicianName =
-        t.name || s.tech || "Unassigned";
-
-      const amount =
-        s.charge ?? s.amount ?? 0;
-
-
-      return `
-        <div class="service-card">
-
-          <div class="row">
-
-            <div>
-              <b>${esc(customerName)}</b>
-
-              <div class="mini">
-                ${esc(mobile)}
-                •
-                ${esc(serviceType)}
-              </div>
-            </div>
-
-            ${statusBadge(s.status || "Open")}
-
-          </div>
-
-
-          <div class="mini" style="margin-top:8px">
-
-            📅 ${esc(s.date || "-")}
-
-            • 👨‍🔧 ${esc(technicianName)}
-
-            • 💰 ${money(amount)}
-
-            ${s.follow ?
-              ` • 🔔 Follow-up: ${esc(s.follow)}` :
-              ""
-            }
-
-          </div>
-
-
-          <div class="toolbar" style="margin-top:10px">
-
-            <button class="btn"
-              onclick="viewService(${s.id})">
-              👁️ View
-            </button>
-
-            <button class="btn"
-              onclick="callNo('${esc(mobile)}')">
-              📞 Call
-            </button>
-
-            <button class="btn"
-              onclick="wa('${esc(mobile)}')">
-              💬 WhatsApp
-            </button>
-
-          </div>
-
-        </div>
-      `;
-
-    }).join("");
-  };
-
-
-  // View Service
-  window.viewService = function(id){
-
-    ensureServiceData();
-
-    const s =
-      db.services.find(x => x.id === id);
-
-    if(!s) return;
-
-
-    const c =
-      db.customers.find(x =>
-        x.id === s.customerId
-      ) || {};
-
-
-    const t =
-      db.technicians.find(x =>
-        x.id === s.technicianId
-      ) || {};
-
-
-    const customerName =
-      c.name || s.customer || "-";
-
-    const mobile =
-      c.mobile || s.mobile || "-";
-
-    const type =
-      s.type || s.problem || "-";
-
-    const technician =
-      t.name || s.tech || "Unassigned";
-
-    const amount =
-      s.charge ?? s.amount ?? 0;
-
-
-    const detail =
-      document.getElementById("serviceDetail");
-
-
-    if(detail){
-
-      detail.innerHTML = `
-
-        <div class="service-card">
-
-          <h3>${esc(customerName)}</h3>
-
-          <p>
-            <b>📞 Mobile:</b>
-            ${esc(mobile)}
-          </p>
-
-          <p>
-            <b>📅 Date:</b>
-            ${esc(s.date || "-")}
-          </p>
-
-          <p>
-            <b>🔧 Service:</b>
-            ${esc(type)}
-          </p>
-
-          <p>
-            <b>👨‍🔧 Technician:</b>
-            ${esc(technician)}
-          </p>
-
-          <p>
-            <b>Status:</b>
-            ${statusBadge(s.status || "-")}
-          </p>
-
-          <p>
-            <b>💰 Service Amount:</b>
-            ${money(amount)}
-          </p>
-
-          <p>
-            <b>🔔 Next Follow-up:</b>
-            ${esc(s.follow || "-")}
-          </p>
-
-          <p>
-            <b>📝 Notes:</b>
-            ${esc(s.notes || "-")}
-          </p>
-
-        </div>
-
-        <div class="toolbar">
-
-          <button class="btn"
-            onclick="callNo('${esc(mobile)}')">
-            📞 Call
-          </button>
-
-          <button class="btn green"
-            onclick="wa('${esc(mobile)}','Your Purixa service status is: ${esc(s.status || "Open")}')">
-            💬 WhatsApp
-          </button>
-
-        </div>
-      `;
-
-    }
-
-
-    openModal("serviceDetailModal");
-  };
-
-
-  // IMPORTANT:
-  // Old renderService() was causing JavaScript error
-  // because serviceTable did not exist.
-  window.renderService = function(){
-
-    renderServices();
-
-  };
-
-
-  // Replace renderAll so Service doesn't crash CRM
-  window.renderAll = function(){
-
-    try{ renderDashboard(); }catch(e){ console.error(e); }
-
-    try{ renderLeads(); }catch(e){ console.error(e); }
-
-    try{ renderCustomers(); }catch(e){ console.error(e); }
-
-    try{ renderSales(); }catch(e){ console.error(e); }
-
-    try{ renderServices(); }catch(e){ console.error(e); }
-
-    try{ renderAMC(); }catch(e){ console.error(e); }
-
-    try{ renderTech(); }catch(e){ console.error(e); }
-
-    try{ renderReports(); }catch(e){ console.error(e); }
-
-    try{ renderReminders(); }catch(e){ console.error(e); }
-  };
-
-
-  // Initial service rendering
-  setTimeout(function(){
-
-    try{
-      renderServices();
-    }catch(e){
-      console.error(e);
-    }
-
-  },100);
-
-
-})();
 </script>
 </body>
 </html>
