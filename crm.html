@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v21 PWA</title>
+<title>Purixa CRM Cloud — v20 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -52,7 +52,7 @@ th{background:#f8fafc;color:#53677d}
 .toast.show{display:block}
 @media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="reminders"]:before{content:"🔔"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
 @media(max-width:560px){.main{padding:12px}.modal-box .cards{grid-template-columns:repeat(2,1fr)!important}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.metric{font-size:21px}.form-grid{grid-template-columns:1fr}.top h1{font-size:20px}.btn{padding:9px 10px}}
-.service-bill{background:#fff;border:1px solid #ddd;border-radius:12px;padding:22px;max-width:760px;margin:auto}.service-bill h2{margin:0 0 5px}.service-bill .bill-head{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #eee;padding-bottom:14px;margin-bottom:14px}.service-bill table{width:100%;border-collapse:collapse}.service-bill th,.service-bill td{padding:9px;border-bottom:1px solid #eee;text-align:left}.service-bill .bill-total{font-size:20px;font-weight:800;text-align:right;margin-top:15px}.service-bill .thanks{margin-top:25px;padding-top:12px;border-top:1px solid #eee;color:#52667a}.modal.print-service-bill .modal-box{max-width:850px}@media print{body>*:not(#invoiceModal){display:none!important}#invoiceModal{display:block!important;position:static}.modal-box{box-shadow:none!important;width:100%!important;max-width:none!important}}
+@media print{body>*:not(#invoiceModal){display:none!important}#invoiceModal{display:block!important;position:static}.modal-box{box-shadow:none!important;width:100%!important;max-width:none!important}}
 </style>
 
 <style>
@@ -73,6 +73,8 @@ th{background:#f8fafc;color:#53677d}
 <meta name="apple-mobile-web-app-title" content="Purixa CRM">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
+#authOverlay{position:fixed;inset:0;background:#f4f7fb;z-index:10000;display:none;align-items:center;justify-content:center;padding:18px}
+#authOverlay.show{display:flex}.auth-box{background:#fff;width:min(430px,100%);border:1px solid var(--line);border-radius:16px;padding:22px;box-shadow:0 12px 40px #102a4320}.auth-box h2{margin:0 0 6px}.auth-box input,.auth-box textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;margin:6px 0}.auth-box textarea{min-height:150px;font-family:monospace;font-size:12px}.cloud-status{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:20px;background:#eef2ff;color:#3949ab;font-size:11px;font-weight:700}
 #pwaInstallBtn{display:none;position:fixed;right:18px;bottom:18px;z-index:9999;
   background:#0b6efd;color:#fff;border:0;border-radius:12px;padding:12px 16px;
   font-weight:700;box-shadow:0 6px 18px rgba(0,0,0,.18)}
@@ -81,6 +83,29 @@ th{background:#f8fafc;color:#53677d}
 
 </head>
 <body>
+<div id="authOverlay">
+  <div class="auth-box">
+    <h2>☁️ Purixa CRM Cloud v20</h2>
+    <p class="mini" id="authModeText">Cloud login is enabled after Firebase setup.</p>
+    <div id="firebaseSetupBox">
+      <label class="mini">Firebase Config JSON</label>
+      <textarea id="firebaseConfigInput" placeholder='{
+  "apiKey":"...",
+  "authDomain":"...",
+  "projectId":"..."
+}'></textarea>
+      <button class="btn primary" style="width:100%" onclick="saveFirebaseConfigFromAuth()">☁️ Save Cloud Setup</button>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="continueLocalMode()">Continue in Local Mode</button>
+    </div>
+    <div id="loginBox" style="display:none">
+      <input id="loginEmail" type="email" placeholder="Admin email">
+      <input id="loginPassword" type="password" placeholder="Password">
+      <button class="btn primary" style="width:100%" onclick="cloudLogin()">🔐 Login & Sync</button>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="continueLocalMode()">Use Local Mode</button>
+    </div>
+    <div id="authMsg" class="mini" style="margin-top:10px"></div>
+  </div>
+</div>
 <div class="app">
 <aside class="sidebar">
   <div class="brand">PURIXA CRM CLOUD<small>Water Solution Business CRM</small></div>
@@ -101,7 +126,7 @@ th{background:#f8fafc;color:#53677d}
 <main class="main">
   <div class="top">
     <div><h1 id="pageTitle">Dashboard</h1><p>Purixa Water Solution — Business Management</p></div>
-    <div><button id="topActionBtn" class="btn primary" onclick="openModal('leadModal')">＋ New Lead</button></div>
+    <div style="display:flex;align-items:center;gap:8px"><span id="cloudStatus" class="cloud-status">💾 Local</span><button id="topActionBtn" class="btn primary" onclick="openModal('leadModal')">＋ New Lead</button></div>
   </div>
 
   <section id="dashboard" class="page active">
@@ -229,6 +254,12 @@ th{background:#f8fafc;color:#53677d}
           <button class="btn primary" onclick="saveReviewLink()">💾 Save Review Link</button>
         </div>
       </div>
+      <div class="panel" style="background:#f8fbff">
+        <h3 style="margin-bottom:6px">☁️ Cloud Sync & Login</h3>
+        <p class="mini">Firebase use karne par CRM data user account ke Firestore document me sync hoga. Firebase Console me Authentication → Email/Password aur Firestore enable karna hoga.</p>
+        <div class="toolbar"><button class="btn primary" onclick="openCloudSetup()">⚙️ Configure Cloud</button><button class="btn" onclick="cloudSyncNow()">☁️ Sync Now</button><button class="btn red" onclick="cloudLogout()">Logout</button></div>
+        <div id="cloudSettingsInfo" class="mini"></div>
+      </div>
       <div class="toolbar">
         <button class="btn" onclick="exportData()">Export Backup</button>
         <button class="btn" onclick="document.getElementById('importFile').click()">Import Backup</button>
@@ -242,15 +273,6 @@ th{background:#f8fafc;color:#53677d}
 
 <!-- Lead Modal -->
 
-<div class="modal" id="serviceBillModal"><div class="modal-box">
-<div class="modal-head"><h3>🔧 Service Bill</h3><button class="close" onclick="closeModal('serviceBillModal')">×</button></div>
-<div id="serviceBillPreview" class="service-bill"></div>
-<div class="toolbar">
-<button class="btn" onclick="printServiceBill()">🖨️ Print / Save PDF</button>
-<button class="btn green" onclick="sendCurrentServiceBillWhatsApp()">💬 WhatsApp Bill + Review</button>
-<button class="btn" onclick="closeModal('serviceBillModal')">Close</button>
-</div>
-</div></div>
 <div class="modal" id="invoiceModal"><div class="modal-box">
 <div class="modal-head"><h3>🧾 Invoice / Receipt</h3><button class="close" onclick="closeModal('invoiceModal')">×</button></div>
 <div id="invoicePreview" class="invoice"></div>
@@ -297,13 +319,7 @@ th{background:#f8fafc;color:#53677d}
 <div class="modal" id="serviceModal"><div class="modal-box">
 <div class="modal-head"><h3 id="serviceModalTitle">New Service Request</h3><button class="close" onclick="closeModal('serviceModal')">×</button></div>
 <form onsubmit="saveService(event)"><div class="form-grid">
-<div class="field">
-<label>Customer *</label>
-<div class="toolbar" style="margin:0;gap:6px">
-<select id="svcCustomer" required style="flex:1"><option value="">Select Customer</option></select>
-<button type="button" class="btn primary" onclick="openQuickCustomerModal()">＋ New</button>
-</div>
-</div>
+<div class="field"><label>Customer *</label><select id="svcCustomer" required><option value="">Select Customer</option></select></div>
 <div class="field"><label>Mobile</label><input id="svcMobile" readonly></div>
 <div class="field"><label>Problem / Service Type *</label><select id="svcProblem" required><option value="">Select Service</option><option>General Service</option><option>Filter Change</option><option>RO / Membrane</option><option>Pump Problem</option><option>Leakage</option><option>Water Quality</option><option>Installation</option><option>Other</option></select></div>
 <div class="field"><label>Technician</label><select id="svcTech"><option value="">Unassigned</option></select></div>
@@ -313,22 +329,6 @@ th{background:#f8fafc;color:#53677d}
 <div class="field"><label>Next Follow-up</label><input id="svcFollow" type="date"></div>
 <div class="field full"><label>Notes</label><textarea id="svcNotes" rows="3" placeholder="Service details / parts required / customer complaint"></textarea></div><div class="field full"><div class="mini">💬 Status ko <b>Completed</b> karne par CRM WhatsApp me Service Bill + Review request kholega.</div></div>
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('serviceModal')">Cancel</button><button class="btn primary">💾 Save Service</button></div></form>
-</div></div>
-
-<!-- Quick New Customer from Service -->
-<div class="modal" id="quickCustomerModal"><div class="modal-box">
-<div class="modal-head"><h3>＋ New Customer</h3><button class="close" onclick="closeModal('quickCustomerModal')">×</button></div>
-<form onsubmit="saveQuickCustomer(event)"><div class="form-grid">
-<div class="field"><label>Name *</label><input id="quickCustName" required></div>
-<div class="field"><label>Mobile / WhatsApp *</label><input id="quickCustMobile" required></div>
-<div class="field"><label>Product / Model</label><input id="quickCustProduct" placeholder="RO / UV / Commercial RO"></div>
-<div class="field"><label>Installation Date</label><input id="quickCustInstall" type="date"></div>
-<div class="field full"><label>Address</label><textarea id="quickCustAddress" rows="2"></textarea></div>
-</div>
-<div class="actions">
-<button type="button" class="btn" onclick="closeModal('quickCustomerModal')">Cancel</button>
-<button class="btn primary">💾 Save & Select Customer</button>
-</div></form>
 </div></div>
 
 <div class="modal" id="serviceDetailModal"><div class="modal-box"><div class="modal-head"><h3>Service Details</h3><button class="close" onclick="closeModal('serviceDetailModal')">×</button></div><div id="serviceDetail"></div></div></div>
@@ -402,15 +402,23 @@ th{background:#f8fafc;color:#53677d}
 <div id="profileBody"></div>
 </div></div>
 
+<div class="modal" id="cloudSetupModal"><div class="modal-box">
+<div class="modal-head"><h3>☁️ Firebase Cloud Setup</h3><button class="close" onclick="closeModal('cloudSetupModal')">×</button></div>
+<p class="mini">Firebase Console se Web App ka config copy karke neeche paste karein.</p>
+<textarea id="firebaseConfigSettings" style="width:100%;min-height:190px;padding:10px;border:1px solid var(--line);border-radius:8px;font-family:monospace;font-size:12px"></textarea>
+<div class="actions"><button class="btn" onclick="closeModal('cloudSetupModal')">Cancel</button><button class="btn primary" onclick="saveFirebaseConfig()">💾 Save & Connect</button></div>
+</div></div>
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script>
 const KEY="purixaCRM_v1";
 const today=new Date().toISOString().slice(0,10);
 const emptyDB=()=>({leads:[],customers:[],sales:[],services:[],amcs:[],technicians:[]});
 let db=loadDB();
 let editingCustomerId=null, editingServiceId=null, currentInvoiceMobile="", currentAMCVisitId=null, editingAMCVisitIndex=null;
-let currentServiceBillId=null;
 
 function loadDB(){
   try{
@@ -464,6 +472,23 @@ function normalizeService(s,d=emptyDB()){
   const tech= s.tech || (d.technicians||[]).find(x=>x.id===technicianId)?.name || "";
   return {id:s.id||Date.now()+Math.random(),customerId,customer,mobile,problem:s.problem||s.type||"General Service",tech,technicianId,status:s.status||"Open",amount:Number(s.amount??s.charge??0),charge:Number(s.charge??s.amount??0),date:s.date||today,follow:s.follow||"",notes:s.notes||""};
 }
+let cloudSyncing=false, cloudReady=false, firebaseApp=null, firebaseAuth=null, firestore=null;
+const FIREBASE_KEY="purixaFirebaseConfig_v20";
+function getFirebaseConfig(){try{return JSON.parse(localStorage.getItem(FIREBASE_KEY)||"null")}catch{return null}}
+function setCloudStatus(text){const x=document.getElementById("cloudStatus");if(x)x.textContent=text;const i=document.getElementById("cloudSettingsInfo");if(i)i.textContent=text+(firebaseAuth?.currentUser?" · "+firebaseAuth.currentUser.email:"")}
+function initFirebase(){const cfg=getFirebaseConfig();if(!cfg||!cfg.apiKey||!cfg.projectId)return false;try{if(!firebase.apps.length)firebaseApp=firebase.initializeApp(cfg);else firebaseApp=firebase.app();firebaseAuth=firebase.auth();firestore=firebase.firestore();cloudReady=true;setCloudStatus(firebaseAuth.currentUser?"☁️ Cloud Connected":"☁️ Cloud Login");firebaseAuth.onAuthStateChanged(async user=>{if(user){setCloudStatus("☁️ Cloud Connected");await loadCloudData()}else{setCloudStatus("🔐 Login Required")}});return true}catch(e){console.error(e);setCloudStatus("⚠️ Cloud Error");return false}}
+async function loadCloudData(){if(!firestore||!firebaseAuth.currentUser)return;try{const ref=firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm").doc("main");const snap=await ref.get();if(snap.exists){const remote=snap.data().data; if(remote){db=Object.assign(emptyDB(),remote);db.services=db.services.map(s=>normalizeService(s,db));syncCustomerAMCFields(db);localStorage.setItem(KEY,JSON.stringify(db));renderAll();toast("Cloud data loaded")} }else{await syncCloudData(true)}}catch(e){console.error(e);toast("Cloud load failed")}}
+async function syncCloudData(silent=false){if(!firestore||!firebaseAuth.currentUser||cloudSyncing)return false;cloudSyncing=true;try{await firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm").doc("main").set({data:db,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),version:"v20"},{merge:true});if(!silent)toast("Cloud synced");return true}catch(e){console.error(e);if(!silent)toast("Cloud sync failed");return false}finally{cloudSyncing=false}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(db));renderAll();if(cloudReady&&firebaseAuth?.currentUser)syncCloudData(true)}
+function openCloudSetup(){document.getElementById("firebaseConfigSettings").value=JSON.stringify(getFirebaseConfig()||{},null,2);openModal("cloudSetupModal")}
+function saveFirebaseConfig(){try{const cfg=JSON.parse(document.getElementById("firebaseConfigSettings").value);if(!cfg.apiKey||!cfg.projectId)throw Error();localStorage.setItem(FIREBASE_KEY,JSON.stringify(cfg));closeModal("cloudSetupModal");if(initFirebase())showLoginOverlay()}catch(e){toast("Invalid Firebase config")}}
+function saveFirebaseConfigFromAuth(){try{const cfg=JSON.parse(document.getElementById("firebaseConfigInput").value);if(!cfg.apiKey||!cfg.projectId)throw Error();localStorage.setItem(FIREBASE_KEY,JSON.stringify(cfg));document.getElementById("firebaseSetupBox").style.display="none";document.getElementById("loginBox").style.display="block";document.getElementById("authModeText").textContent="Firebase connected. Login to sync your CRM.";initFirebase()}catch(e){document.getElementById("authMsg").textContent="Invalid Firebase config."}}
+function showLoginOverlay(){const o=document.getElementById("authOverlay");if(o)o.classList.add("show");const cfg=getFirebaseConfig();if(cfg){document.getElementById("firebaseSetupBox").style.display="none";document.getElementById("loginBox").style.display="block";document.getElementById("authModeText").textContent="Firebase connected. Login to sync your CRM."}}
+function hideLoginOverlay(){document.getElementById("authOverlay")?.classList.remove("show")}
+function continueLocalMode(){hideLoginOverlay();setCloudStatus("💾 Local Mode");toast("Using local mode") }
+async function cloudLogin(){if(!firebaseAuth){document.getElementById("authMsg").textContent="Configure Firebase first.";return}const email=document.getElementById("loginEmail").value.trim(),pass=document.getElementById("loginPassword").value;if(!email||!pass){document.getElementById("authMsg").textContent="Enter email and password.";return}try{document.getElementById("authMsg").textContent="Signing in...";await firebaseAuth.signInWithEmailAndPassword(email,pass);hideLoginOverlay()}catch(e){document.getElementById("authMsg").textContent=e.message||"Login failed"}}
+async function cloudLogout(){if(firebaseAuth?.currentUser){await firebaseAuth.signOut();showLoginOverlay()}}
+function cloudSyncNow(){if(!cloudReady||!firebaseAuth?.currentUser){toast("Please login to cloud first");return}syncCloudData(false)}
 function persist(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
 function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{maximumFractionDigits:2})}
 function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
@@ -486,48 +511,6 @@ function saveLead(e){e.preventDefault();db.leads.unshift({id:Date.now(),name:lea
 function saveCustomer(e){e.preventDefault();const mobile=custMobile.value.trim();if(db.customers.some(x=>x.mobile===mobile)){toast("Customer with this mobile already exists");return}db.customers.unshift({id:Date.now(),name:custName.value.trim(),mobile,product:custProduct.value.trim(),purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,installStatus:custInstallStatus.value,nextService:custNextService.value,address:custAddress.value.trim(),notes:""});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
 function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;if(total<=0){toast("Enter total amount");return}if(paid>total){toast("Paid amount cannot exceed total");return}const c=db.customers.find(x=>x.name.toLowerCase()===saleCustomer.value.trim().toLowerCase());db.sales.unshift({id:Date.now(),date:today,customerId:c?.id||null,customer:saleCustomer.value.trim(),mobile:c?.mobile||"",product:saleProduct.value.trim(),total,amount:total,paid,pending:Math.max(0,total-paid),mode:saleMode.value,paymentStatus:salePaymentStatus({total,paid})});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
 
-function openQuickCustomerModal(){
-  document.getElementById("quickCustName").value="";
-  document.getElementById("quickCustMobile").value="";
-  document.getElementById("quickCustProduct").value="";
-  document.getElementById("quickCustInstall").value=today;
-  document.getElementById("quickCustAddress").value="";
-  openModal("quickCustomerModal");
-  setTimeout(()=>document.getElementById("quickCustName")?.focus(),80);
-}
-function saveQuickCustomer(e){
-  e.preventDefault();
-  const name=document.getElementById("quickCustName").value.trim();
-  const mobile=document.getElementById("quickCustMobile").value.trim();
-  if(!name||!mobile){toast("Name and mobile are required");return}
-  const existing=db.customers.find(x=>String(x.mobile||"").replace(/\\D/g,"")===mobile.replace(/\\D/g,""));
-  if(existing){
-    fillServiceCustomerOptions(existing.id);
-    document.getElementById("svcMobile").value=existing.mobile||"";
-    closeModal("quickCustomerModal");
-    toast("Customer already exists — selected");
-    return;
-  }
-  const id=Date.now();
-  db.customers.unshift({
-    id,
-    name,
-    mobile,
-    product:document.getElementById("quickCustProduct").value.trim(),
-    purchase:"",
-    install:document.getElementById("quickCustInstall").value||"",
-    amc:"",
-    installStatus:"Pending",
-    nextService:"",
-    address:document.getElementById("quickCustAddress").value.trim(),
-    notes:""
-  });
-  persist();
-  fillServiceCustomerOptions(id);
-  document.getElementById("svcMobile").value=mobile;
-  closeModal("quickCustomerModal");
-  toast("Customer saved and selected for this service");
-}
 function fillServiceCustomerOptions(selectedId=""){
   const s=document.getElementById("svcCustomer");if(!s)return;
   s.innerHTML='<option value="">Select Customer</option>'+db.customers.map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile||"")}</option>`).join("");
@@ -549,44 +532,11 @@ function saveService(e){e.preventDefault();const cid=Number(svcCustomer.value);c
   if(sendCompleted){setTimeout(()=>sendServiceBillAndReviewWhatsApp(savedId),450)}
 }
 function editService(id){const s=db.services.find(x=>x.id===id);if(!s)return;editingServiceId=id;document.getElementById("serviceModalTitle").textContent="Edit Service Request";fillServiceCustomerOptions(s.customerId||"");svcMobile.value=s.mobile||db.customers.find(c=>c.id===s.customerId)?.mobile||"";svcProblem.value=s.problem||"General Service";svcTech.value=s.technicianId?String(s.technicianId):"";svcStatus.value=s.status||"Open";svcAmount.value=s.amount??s.charge??0;svcDate.value=s.date||today;svcFollow.value=s.follow||"";svcNotes.value=s.notes||"";openModal("serviceModal")}
-function viewService(id){const s=db.services.find(x=>x.id===id);if(!s)return;const c=db.customers.find(x=>x.id===s.customerId)||{};const t=db.technicians.find(x=>x.id===s.technicianId)||{};const completedBtn=s.status==="Completed"?`<button class="btn green" onclick="openServiceBill(${s.id})">📄 Bill</button><button class="btn green" onclick="sendServiceBillAndReviewWhatsApp(${s.id})">📲 Bill + Review WhatsApp</button>`:"";document.getElementById("serviceDetail").innerHTML=`<div class="service-card"><h3>${esc(c.name||s.customer||"-")}</h3><p><b>Mobile:</b> ${esc(c.mobile||s.mobile||"-")}</p><p><b>Date:</b> ${esc(s.date||"-")}</p><p><b>Problem:</b> ${esc(s.problem||"-")}</p><p><b>Technician:</b> ${esc(t.name||s.tech||"Unassigned")}</p><p><b>Status:</b> ${statusBadge(s.status||"Open")}</p><p><b>Charge:</b> ${money(s.amount??s.charge??0)}</p><p><b>Follow-up:</b> ${esc(s.follow||"-")}</p><p><b>Details:</b> ${esc(s.notes||"-")}</p><div class="toolbar"><button class="btn primary" onclick="closeModal('serviceDetailModal');editService(${s.id})">✏️ Edit</button><button class="btn" onclick="callNoByService(${s.id})">📞 Call</button><button class="btn" onclick="waByService(${s.id})">💬 WhatsApp</button>${completedBtn}<button class="btn red" onclick="del('services',${s.id});closeModal('serviceDetailModal')">Delete</button></div></div>`;openModal("serviceDetailModal")}
+function viewService(id){const s=db.services.find(x=>x.id===id);if(!s)return;const c=db.customers.find(x=>x.id===s.customerId)||{};const t=db.technicians.find(x=>x.id===s.technicianId)||{};const completedBtn=s.status==="Completed"?`<button class="btn green" onclick="sendServiceBillAndReviewWhatsApp(${s.id})">📲 Bill + Review WhatsApp</button>`:"";document.getElementById("serviceDetail").innerHTML=`<div class="service-card"><h3>${esc(c.name||s.customer||"-")}</h3><p><b>Mobile:</b> ${esc(c.mobile||s.mobile||"-")}</p><p><b>Date:</b> ${esc(s.date||"-")}</p><p><b>Problem:</b> ${esc(s.problem||"-")}</p><p><b>Technician:</b> ${esc(t.name||s.tech||"Unassigned")}</p><p><b>Status:</b> ${statusBadge(s.status||"Open")}</p><p><b>Charge:</b> ${money(s.amount??s.charge??0)}</p><p><b>Follow-up:</b> ${esc(s.follow||"-")}</p><p><b>Details:</b> ${esc(s.notes||"-")}</p><div class="toolbar"><button class="btn primary" onclick="closeModal('serviceDetailModal');editService(${s.id})">✏️ Edit</button><button class="btn" onclick="callNoByService(${s.id})">📞 Call</button><button class="btn" onclick="waByService(${s.id})">💬 WhatsApp</button>${completedBtn}<button class="btn red" onclick="del('services',${s.id});closeModal('serviceDetailModal')">Delete</button></div></div>`;openModal("serviceDetailModal")}
 function callNoByService(id){const s=db.services.find(x=>x.id===id);callNo(s?.mobile||db.customers.find(c=>c.id===s?.customerId)?.mobile)}
 function getReviewLink(){return String(localStorage.getItem("purixa_google_review_link")||"").trim()}
 function saveReviewLink(){const el=document.getElementById("reviewLink");if(!el)return;localStorage.setItem("purixa_google_review_link",el.value.trim());toast(el.value.trim()?"Google Review link saved":"Review link cleared")}
 function loadReviewLink(){const el=document.getElementById("reviewLink");if(el)el.value=getReviewLink()}
-function serviceBillHtml(s){
-  const c=db.customers.find(x=>x.id===s.customerId)||{};
-  const billNo=s.serviceInvoiceNo||("PWS-SVC-"+String(s.id).replace(/\D/g,"").slice(-6).padStart(6,"0"));
-  s.serviceInvoiceNo=billNo;
-  const amount=Number(s.amount??s.charge??0);
-  return `<div class="bill-head"><div><h2>Purixa Water Solution</h2><div>Service Bill / Receipt</div></div><div><b>Bill No:</b> ${esc(billNo)}<br><b>Date:</b> ${esc(s.date||today)}</div></div>
-  <p><b>Customer:</b> ${esc(c.name||s.customer||"Customer")}<br><b>Mobile:</b> ${esc(c.mobile||s.mobile||"-")}</p>
-  <table><tr><th>Service</th><th>Technician</th><th>Details</th><th>Amount</th></tr>
-  <tr><td>${esc(s.problem||"General Service")}</td><td>${esc(s.tech||"Unassigned")}</td><td>${esc(s.notes||"-")}</td><td>${money(amount)}</td></tr></table>
-  <div class="bill-total">Total: ${money(amount)}</div>
-  <div class="thanks">Thank you for choosing Purixa Water Solution.<br>⭐ Please share your Google review after service.</div>`;
-}
-function openServiceBill(id){
-  const s=db.services.find(x=>x.id===id); if(!s)return;
-  if(s.status!=="Completed"){toast("Service must be Completed first");return}
-  currentServiceBillId=id;
-  document.getElementById("serviceBillPreview").innerHTML=serviceBillHtml(s);
-  openModal("serviceBillModal");
-  persist();
-}
-function printServiceBill(){
-  if(!currentServiceBillId)return;
-  const s=db.services.find(x=>x.id===currentServiceBillId); if(!s)return;
-  const w=window.open("","_blank","width=900,height=700");
-  if(!w){toast("Please allow pop-ups for this CRM");return}
-  w.document.write(`<html><head><title>${esc(s.serviceInvoiceNo||"Service Bill")}</title><style>body{font-family:Arial,sans-serif;padding:30px;color:#17324d}.service-bill{background:#fff;padding:22px;max-width:760px;margin:auto}.bill-head{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #eee;padding-bottom:14px;margin-bottom:14px}.service-bill table{width:100%;border-collapse:collapse}.service-bill th,.service-bill td{padding:9px;border-bottom:1px solid #eee;text-align:left}.bill-total{font-size:20px;font-weight:800;text-align:right;margin-top:15px}.thanks{margin-top:25px;padding-top:12px;border-top:1px solid #eee}</style></head><body><div class="service-bill">${serviceBillHtml(s)}</div><script>window.onload=()=>window.print()<\/script></body></html>`);
-  w.document.close();
-}
-function sendCurrentServiceBillWhatsApp(){
-  if(!currentServiceBillId)return;
-  sendServiceBillAndReviewWhatsApp(currentServiceBillId);
-}
-
 function serviceBillText(s){
   const c=db.customers.find(x=>x.id===s.customerId)||{};
   const billNo=s.serviceInvoiceNo||("PWS-SVC-"+String(s.id).replace(/\D/g,"").slice(-6).padStart(6,"0"));
@@ -738,7 +688,7 @@ function leadWhatsApp(id){const x=db.leads.find(x=>x.id===id);if(x)wa(x.mobile,"
 function renderLeads(){const q=(leadSearch?.value||"").toLowerCase(),arr=db.leads.filter(x=>(x.name+x.mobile+x.product+x.source).toLowerCase().includes(q)),stages=["New","Contacted","Interested","Site Visit","Quotation","Negotiation","Won","Lost"];pipeline.innerHTML=stages.map(st=>`<div class="stage"><h4>${st} <span class="mini">(${arr.filter(x=>x.status===st).length})</span></h4>${arr.filter(x=>x.status===st).slice(0,12).map(x=>`<div class="lead"><b>${esc(x.name)}</b><div class="mini">${esc(x.product||"")}</div><div class="mini">${esc(x.mobile)}</div><div class="toolbar" style="margin:6px 0 0"><button class="btn" onclick="leadCall(${x.id})">📞</button><button class="btn" onclick="leadWhatsApp(${x.id})">💬</button>${x.status!=="Won"?`<button class="btn green" onclick="convertLead(${x.id})">→ Customer</button>`:""}</div></div>`).join("")||`<div class="mini">No leads</div>`}</div>`).join("")}
 function renderCustomers(){const q=(customerSearch?.value||"").toLowerCase(),arr=db.customers.filter(x=>(x.name+x.mobile+x.product+x.address).toLowerCase().includes(q));customerTable.innerHTML=arr.map(x=>`<tr><td><b>${esc(x.name)}</b><div class="mini">${esc(x.address||"")}</div></td><td>${esc(x.mobile)}<br><button class="btn" onclick="customerCallById(${x.id})">📞</button> <button class="btn" onclick="customerWhatsAppById(${x.id})">💬</button></td><td>${esc(x.product||"-")}</td><td>${esc(x.purchase||"-")}</td><td>${x.amc?esc(x.amc):"-"}</td><td><button class="btn primary" onclick="openCustomerProfile(${x.id})">👤 View</button> <button class="btn" onclick="editCustomer(${x.id})">✏️ Edit</button> <button class="btn" onclick="openCustomerService(${x.id})">🔧 Service</button> <button class="btn red" onclick="del('customers',${x.id})">Delete</button></td></tr>`).join("")||`<tr><td colspan="6" class="empty">No customers found</td></tr>`}
 function renderSales(){updateSalesBalances();const box=document.getElementById("salesTable");if(!box)return;box.innerHTML=db.sales.length?db.sales.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};return `<tr><td>${esc(s.date||"-")}</td><td><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(c.mobile||s.mobile||"")}</div></td><td>${esc(s.product||"-")}</td><td>${money(s.total)}</td><td>${money(s.paid)}</td><td>${money(s.pending)}</td><td>${statusBadge(s.paymentStatus)}</td><td><button class="btn" onclick="viewInvoice(${s.id})">🧾 Invoice</button></td></tr>`}).join(""): `<tr><td colspan="8" class="empty">No sales yet.</td></tr>`}
-function renderServices(){const q=(document.getElementById("serviceSearch")?.value||"").toLowerCase();const arr=db.services.filter(s=>(s.customer+s.mobile+s.problem+s.tech+s.status).toLowerCase().includes(q));const box=document.getElementById("serviceList");if(!box)return;box.innerHTML=arr.length?arr.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};const mobile=c.mobile||s.mobile||"";return `<div class="service-card"><div class="row"><div><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(mobile)} • ${esc(s.problem||"Service")}</div></div>${statusBadge(s.status||"Open")}</div><div class="mini">📅 ${esc(s.date||"-")} • 👨‍🔧 ${esc(s.tech||"Unassigned")} • 💰 ${money(s.amount??s.charge??0)}${s.follow?` • 🔔 Follow-up ${esc(s.follow)}`:""}</div><div class="mini" style="margin-top:7px">${esc(s.notes||"")}</div><div class="toolbar" style="margin:8px 0 0"><button class="btn" onclick="viewService(${s.id})">👁 View</button><button class="btn" onclick="editService(${s.id})">✏️ Edit</button><button class="btn" onclick="waByService(${s.id})">💬 WhatsApp</button>${s.status==="Completed"?`<button class="btn" onclick="openServiceBill(${s.id})">📄 Bill</button><button class="btn green" onclick="sendServiceBillAndReviewWhatsApp(${s.id})">📲 Bill + Review</button>`:""}<button class="btn red" onclick="del('services',${s.id})">Delete</button></div></div>`}).join(""):`<div class="empty">No service requests found.</div>`}
+function renderServices(){const q=(document.getElementById("serviceSearch")?.value||"").toLowerCase();const arr=db.services.filter(s=>(s.customer+s.mobile+s.problem+s.tech+s.status).toLowerCase().includes(q));const box=document.getElementById("serviceList");if(!box)return;box.innerHTML=arr.length?arr.map(s=>{const c=db.customers.find(x=>x.id===s.customerId)||{};const mobile=c.mobile||s.mobile||"";return `<div class="service-card"><div class="row"><div><b>${esc(c.name||s.customer||"-")}</b><div class="mini">${esc(mobile)} • ${esc(s.problem||"Service")}</div></div>${statusBadge(s.status||"Open")}</div><div class="mini">📅 ${esc(s.date||"-")} • 👨‍🔧 ${esc(s.tech||"Unassigned")} • 💰 ${money(s.amount??s.charge??0)}${s.follow?` • 🔔 Follow-up ${esc(s.follow)}`:""}</div><div class="mini" style="margin-top:7px">${esc(s.notes||"")}</div><div class="toolbar" style="margin:8px 0 0"><button class="btn" onclick="viewService(${s.id})">👁 View</button><button class="btn" onclick="editService(${s.id})">✏️ Edit</button><button class="btn" onclick="waByService(${s.id})">💬 WhatsApp</button>${s.status==="Completed"?`<button class="btn green" onclick="sendServiceBillAndReviewWhatsApp(${s.id})">📲 Bill + Review</button>`:""}<button class="btn red" onclick="del('services',${s.id})">Delete</button></div></div>`}).join(""):`<div class="empty">No service requests found.</div>`}
 function renderAMC(){
   const box=document.getElementById("amcTable"); if(!box)return;
   if(!db.amcs.length){box.innerHTML='<tr><td colspan="8" class="empty">No AMC records yet. Click “Add AMC” to create one.</td></tr>';return}
@@ -768,6 +718,7 @@ function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileRe
 function resetData(){if(confirm("Reset all CRM data? This will remove all saved records in this browser.")){db=emptyDB();persist();toast("CRM reset")}}
 updateTopAction("dashboard");
 renderAll();
+if(initFirebase() && !firebaseAuth.currentUser) showLoginOverlay();
 loadReviewLink();
 setInterval(renderReminders,60000);
 </script>
