@@ -814,7 +814,7 @@ function numberWords(n){
   return out.trim();
 }
 function nextBillNumber(){
-  const nums=db.sales.map(x=>String(x.invoiceNo||"").replace(/^PWS-/i,"")).map(x=>/^\d+$/.test(x)?Number(x):0);
+  const nums=db.sales.map(x=>String(x.invoiceNo||"").replace(/^PWS-/i,"").trim()).map(x=>/^\d+$/.test(x)&&Number(x)>=1&&Number(x)<=999999?Number(x):0);
   const maxExisting=Math.max(0,...nums);
   db.invoiceCounter=Math.max(701,Number(db.invoiceCounter||701),maxExisting)+1;
   return String(db.invoiceCounter);
@@ -824,7 +824,7 @@ function openInvoice(saleId){
   const c=db.customers.find(x=>x.id===s.customerId)||{};
   const paid=Number(s.paid||0),total=Number(s.total||s.amount||0),pending=Math.max(0,total-paid);
   let inv=String(s.invoiceNo||"").replace(/^PWS-/i,"");
-  if(!/^\d+$/.test(inv)){inv=nextBillNumber();s.invoiceNo=inv;}
+  if(!/^\d+$/.test(inv)||Number(inv)<1||Number(inv)>999999){inv=nextBillNumber();s.invoiceNo=inv;}
   const mode=String(s.mode||"Cash");
   const checks=["Cash","Cheque","UPI","Online Transfer","POS","Finance","EMI"].map(x=>`<span>${mode===x?"☑":"☐"} ${x}</span>`).join("");
   const qty=Math.max(1,Number(s.qty||1));const price=total/qty;
