@@ -1,8 +1,8 @@
 {
-  "name": "Purixa CRM Cloud v20.1",
+  "name": "Purixa CRM Cloud v20.5",
   "short_name": "Purixa CRM",
   "description": "Purixa Water Solution Business CRM",
-  "start_url": "./crm.html",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
