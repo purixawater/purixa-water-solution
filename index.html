@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v20.8 PWA</title>
+<title>Purixa CRM Cloud — v20.9 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -13,7 +13,7 @@ button,input,select,textarea{font:inherit}
 button{cursor:pointer;border:0}
 .app{display:flex;min-height:100vh}
 .sidebar{width:245px;background:#102a43;color:#fff;position:fixed;left:0;top:0;bottom:0;padding:18px 12px;z-index:20;overflow:auto}
-.brand{font-size:21px;font-weight:800;padding:10px 12px 22px}
+.brand{font-size:21px;font-weight:800;padding:10px 12px 22px}.brand-logo{display:block;width:190px;max-width:100%;height:58px;object-fit:contain;object-position:left center;background:#fff;border-radius:8px;padding:4px;margin:0 0 10px}.auth-logo{display:block;width:100%;max-width:320px;height:90px;object-fit:contain;margin:0 auto 12px;border-radius:10px;background:#fff}.invoice .pws-logo img{width:100%;height:100%;max-width:58px;max-height:58px;object-fit:contain}.invoice .pws-logo{height:72px}
 .brand small{display:block;font-size:11px;font-weight:400;opacity:.7;margin-top:4px}
 .nav button{width:100%;background:transparent;color:#d9e7f5;text-align:left;padding:11px 12px;border-radius:9px;margin:2px 0}
 .nav button:hover,.nav button.active{background:#1d4f7a;color:#fff}
@@ -50,7 +50,7 @@ th{background:#f8fafc;color:#53677d}
 .empty{text-align:center;color:var(--muted);padding:25px}
 .toast{position:fixed;right:18px;bottom:18px;background:#102a43;color:#fff;padding:12px 15px;border-radius:9px;display:none;z-index:80}
 .toast.show{display:block}
-@media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="reminders"]:before{content:"🔔"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand-logo{width:48px;height:48px;padding:2px;margin:0 auto 8px}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="reminders"]:before{content:"🔔"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
 @media(max-width:560px){.main{padding:12px}.modal-box .cards{grid-template-columns:repeat(2,1fr)!important}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.metric{font-size:21px}.form-grid{grid-template-columns:1fr}.top h1{font-size:20px}.btn{padding:9px 10px}}
 @media print{body>*:not(#invoiceModal){display:none!important}#invoiceModal{display:block!important;position:static}.modal-box{box-shadow:none!important;width:100%!important;max-width:none!important}}
 </style>
@@ -91,7 +91,8 @@ th{background:#f8fafc;color:#53677d}
 <body>
 <div id="authOverlay">
   <div class="auth-box">
-    <h2>☁️ Purixa CRM Cloud v20.2</h2>
+    <img class="auth-logo" src="purixa-logo.png" alt="Purixa Water Solution">
+    <h2>☁️ Purixa CRM Cloud v20.9</h2>
     <p class="mini" id="authModeText">Cloud login is enabled after Firebase setup.</p>
     <div id="firebaseSetupBox">
       <label class="mini">Firebase Config JSON</label>
@@ -115,7 +116,7 @@ th{background:#f8fafc;color:#53677d}
 </div>
 <div class="app">
 <aside class="sidebar">
-  <div class="brand">PURIXA CRM CLOUD<small>Water Solution Business CRM</small></div>
+  <div class="brand"><img class="brand-logo" src="purixa-logo.png" alt="Purixa Water Solution"><span>PURIXA CRM CLOUD</span><small>Water Solution Business CRM</small></div>
   <nav class="nav">
     <button class="active" data-page="dashboard">Dashboard</button>
     <button data-page="leads">Leads</button>
@@ -833,7 +834,7 @@ function openInvoice(saleId){
   const address=c.address||s.address||"-";
   document.getElementById("invoicePreview").innerHTML=`
   <div class="pws-head">
-    <div class="pws-logo"><div class="pws-mark">P<br><span style="font-size:12px">💧</span></div></div>
+    <div class="pws-logo"><img src="purixa-logo.png" alt="Purixa Water Solution"></div>
     <div class="pws-title"><h2>PURIXA WATER SOLUTION</h2><div>Nr. Harihar Chowk, Sadar Bazar, Sadar,<br>Rajkot, Gujarat 360001<br>☎ 9998267304 / 7016715463</div></div>
     <div class="pws-inv"><b>INVOICE</b><div>Bill No. : <strong>${esc(inv.replace(/^PWS-/,""))}</strong><br>Date : <u>${esc(s.date||today)}</u></div></div>
   </div>
