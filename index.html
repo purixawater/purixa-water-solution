@@ -619,7 +619,7 @@ function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+sale
 
 function fillServiceCustomerOptions(selectedId=""){
   const s=document.getElementById("svcCustomer");if(!s)return;
-  s.innerHTML='<option value="">Select Customer</option>'+db.customers.map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile||"")}</option>`).join("");
+  s.innerHTML='<option value="">Select Customer</option>'+db.customers.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");
   if(selectedId!==""&&selectedId!==null)s.value=String(selectedId);
   const t=document.getElementById("svcTech");if(t)t.innerHTML='<option value="">Unassigned</option>'+db.technicians.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");
   const date=document.getElementById("svcDate");if(date&&!date.value)date.value=today;
@@ -670,7 +670,7 @@ function waByService(id){const s=db.services.find(x=>x.id===id);wa(s?.mobile||db
 let editingAMCId=null, renewingAMCId=null;
 function addDays(dateStr,days){if(!dateStr)return "";const d=new Date(dateStr+"T00:00:00");d.setDate(d.getDate()+Number(days||0));return d.toISOString().slice(0,10)}
 function openAMCRenewal(id){const a=db.amcs.find(x=>x.id===id);if(!a)return;const c=db.customers.find(x=>x.id===a.customerId)||db.customers.find(x=>String(x.name||"").toLowerCase()===String(a.customer||"").toLowerCase());if(!c){toast("Customer not found");return}renewingAMCId=id;editingAMCId=null;document.getElementById("amcModalTitle").textContent="🔄 Renew AMC";fillAMCCustomerOptions(c.id);amcAmount.value=a.amount||0;const newStart=a.end?addDays(a.end,1):today;amcStart.value=newStart;amcEnd.value=addDays(newStart,365);amcVisits.value=Number(a.visitsTotal??a.visits??4)||4;amcNext.value=addDays(newStart,90);openModal("amcModal")}
-function fillAMCCustomerOptions(selected=""){const s=document.getElementById("amcCustomer");if(!s)return;s.innerHTML='<option value="">Select Customer</option>'+db.customers.map(c=>`<option value="${c.id}">${esc(c.name)} — ${esc(c.mobile||"")}</option>`).join("");if(selected!=="")s.value=String(selected)}
+function fillAMCCustomerOptions(selected=""){const s=document.getElementById("amcCustomer");if(!s)return;s.innerHTML='<option value="">Select Customer</option>'+db.customers.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join("");if(selected!=="")s.value=String(selected)}
 function openAMCModal(customerId=""){editingAMCId=null;renewingAMCId=null;document.getElementById("amcModalTitle").textContent="New AMC";fillAMCCustomerOptions(customerId);amcAmount.value=0;amcStart.value=today;amcEnd.value="";amcVisits.value=4;amcNext.value="";openModal("amcModal")}
 function openAMCForCustomer(id){const c=db.customers.find(x=>x.id===Number(id));if(c)openAMCModal(c.id)}
 function editAMC(id){const a=db.amcs.find(x=>x.id===id);if(!a)return;editingAMCId=id;renewingAMCId=null;document.getElementById("amcModalTitle").textContent="Edit AMC";fillAMCCustomerOptions(a.customerId||"");if(!a.customerId){const opt=[...amcCustomer.options].find(o=>o.textContent.split(" — ")[0].toLowerCase()===String(a.customer||"").toLowerCase());if(opt)amcCustomer.value=opt.value}amcAmount.value=a.amount||0;amcStart.value=a.start||"";amcEnd.value=a.end||"";amcVisits.value=a.visitsTotal??a.visits??0;amcNext.value=a.nextService||"";openModal("amcModal")}
