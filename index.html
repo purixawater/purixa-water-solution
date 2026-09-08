@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v20.1.1 PWA</title>
+<title>Purixa CRM Cloud — v20.5 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -56,10 +56,16 @@ th{background:#f8fafc;color:#53677d}
 </style>
 
 <style>
-.invoice{background:#fff;border:1px solid #ddd;border-radius:12px;padding:22px;max-width:760px;margin:auto}
-.invoice h2{margin:0 0 4px}.invoice .inv-head{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #eee;padding-bottom:14px;margin-bottom:14px}
-.invoice table{width:100%;border-collapse:collapse}.invoice th,.invoice td{padding:9px;border-bottom:1px solid #eee;text-align:left}
-.invoice .totals{margin-left:auto;max-width:320px}.invoice .totals div{display:flex;justify-content:space-between;padding:5px}
+.invoice{background:#fff;border:2px solid #173d91;padding:0;max-width:760px;margin:auto;color:#111;font-family:Arial,sans-serif}
+.invoice *{box-sizing:border-box}.invoice .pws-head{display:grid;grid-template-columns:72px 1fr 150px;border-bottom:2px solid #173d91}
+.invoice .pws-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #173d91;padding:7px}
+.invoice .pws-mark{width:54px;height:54px;border:3px solid #173d91;border-radius:5px;color:#173d91;font-weight:900;font-size:25px;display:flex;align-items:center;justify-content:center;line-height:1}
+.invoice .pws-title{padding:10px 12px}.invoice .pws-title h2{margin:0;color:#173d91;font-size:25px;letter-spacing:.5px}.invoice .pws-title div{font-size:13px;line-height:1.35}
+.invoice .pws-inv{border-left:1px solid #173d91;text-align:center}.invoice .pws-inv b{display:block;background:#173d91;color:#fff;padding:8px;font-size:18px}.invoice .pws-inv div{padding:8px;font-size:13px}.invoice .pws-inv strong{color:#b51616;font-size:22px}
+.invoice .bill-info{padding:10px 12px;border-bottom:1px solid #173d91}.invoice .bill-info .row{display:grid;grid-template-columns:130px 1fr 90px 1fr;gap:6px;margin:4px 0}.invoice .pay{padding:8px 12px;border-bottom:1px solid #173d91;font-size:13px}.invoice .checks{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}.invoice .checks span{white-space:nowrap}
+.invoice .bill-table{width:100%;border-collapse:collapse}.invoice .bill-table th,.invoice .bill-table td{border:1px solid #173d91;padding:8px;text-align:left;font-size:13px}.invoice .bill-table th{text-align:center;background:#f5f7fb}.invoice .bill-table th:nth-child(1){width:48px}.invoice .bill-table th:nth-child(3){width:65px}.invoice .bill-table th:nth-child(4),.invoice .bill-table th:nth-child(5){width:105px;text-align:right}.invoice .bill-table td:nth-child(n+3){text-align:right}
+.invoice .words{padding:8px 12px;border-bottom:1px solid #173d91;font-size:13px}.invoice .bottom-grid{display:grid;grid-template-columns:1fr 230px}.invoice .terms{padding:8px 12px;border-right:1px solid #173d91;font-size:12px;line-height:1.5}.invoice .terms b{color:#173d91}.invoice .totalbox>div{display:flex;justify-content:space-between;padding:8px 10px;border-bottom:1px solid #173d91;font-size:13px}.invoice .footer{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #173d91;min-height:95px}.invoice .sig{padding:35px 12px 8px;text-align:center;font-size:12px}.invoice .sig:first-child{border-right:1px solid #173d91}.invoice .sig-line{border-top:1px solid #333;margin-top:18px;padding-top:5px}.invoice .for{color:#173d91;font-weight:700;font-size:16px;margin-bottom:8px}
+@media(max-width:600px){.invoice .pws-head{grid-template-columns:58px 1fr 105px}.invoice .pws-mark{width:44px;height:44px;font-size:20px}.invoice .pws-title h2{font-size:17px}.invoice .bill-info .row{grid-template-columns:90px 1fr}.invoice .bottom-grid{grid-template-columns:1fr 150px}.invoice .checks{gap:6px}.invoice .bill-table th,.invoice .bill-table td{padding:5px;font-size:10px}}
 </style>
 
 <style>.service-card{border:1px solid #e5e7eb;border-radius:12px;padding:14px;margin:10px 0;background:#fff}.service-card .row{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.mini{font-size:12px;opacity:.7}.page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.page-head h2{margin:0 0 4px}.page-head p{margin:0;color:var(--muted)}.amc-visits{font-weight:700}.amc-visits small{display:block;color:var(--muted);font-weight:400}.history-link{color:var(--blue);cursor:pointer;font-weight:700;margin-left:7px}
@@ -85,7 +91,7 @@ th{background:#f8fafc;color:#53677d}
 <body>
 <div id="authOverlay">
   <div class="auth-box">
-    <h2>☁️ Purixa CRM Cloud v20.4</h2>
+    <h2>☁️ Purixa CRM Cloud v20.2</h2>
     <p class="mini" id="authModeText">Cloud login is enabled after Firebase setup.</p>
     <div id="firebaseSetupBox">
       <label class="mini">Firebase Config JSON</label>
@@ -312,7 +318,8 @@ th{background:#f8fafc;color:#53677d}
 <div class="modal-head"><h3>New Sale</h3><button class="close" onclick="closeModal('saleModal')">×</button></div>
 <form onsubmit="saveSale(event)"><div class="form-grid">
 <div class="field"><label>Customer *</label><input id="saleCustomer" required></div><div class="field"><label>Product</label><input id="saleProduct"></div>
-<div class="field"><label>Total Amount</label><input id="saleTotal" type="number" min="0" value="0"></div><div class="field"><label>Paid Amount</label><input id="salePaid" type="number" min="0" value="0"></div><div class="field"><label>Payment Mode</label><select id="saleMode"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Pending</option></select></div>
+<div class="field"><label>Total Amount</label><input id="saleTotal" type="number" min="0" value="0"></div><div class="field"><label>Paid Amount</label><input id="salePaid" type="number" min="0" value="0"></div><div class="field"><label>Payment Mode</label><select id="saleMode"><option>Cash</option><option>Cheque</option><option>UPI</option><option>Online Transfer</option><option>POS</option><option>Finance</option><option>EMI</option><option>Pending</option></select></div>
+<div class="field"><label>Warranty & Service Details</label><input id="saleWarranty" placeholder="1 Year – Electric Part Only"></div><div class="field"><label>GSTIN</label><input id="saleGSTIN" placeholder="Optional"></div><div class="field"><label>Qty</label><input id="saleQty" type="number" min="1" value="1"></div>
 </div><div class="actions"><button type="button" class="btn" onclick="closeModal('saleModal')">Cancel</button><button class="btn primary">Save Sale</button></div></form>
 </div></div>
 
@@ -487,9 +494,76 @@ const BUILT_IN_FIREBASE_CONFIG={
 function getFirebaseConfig(){try{const saved=localStorage.getItem(FIREBASE_KEY);if(saved)return JSON.parse(saved);return BUILT_IN_FIREBASE_CONFIG}catch{return BUILT_IN_FIREBASE_CONFIG}}
 function setCloudStatus(text){const x=document.getElementById("cloudStatus");if(x)x.textContent=text;const i=document.getElementById("cloudSettingsInfo");if(i)i.textContent=text+(firebaseAuth?.currentUser?" · "+firebaseAuth.currentUser.email:"")}
 function initFirebase(){const cfg=getFirebaseConfig();if(!cfg||!cfg.apiKey||!cfg.projectId)return false;try{if(!firebase.apps.length)firebaseApp=firebase.initializeApp(cfg);else firebaseApp=firebase.app();firebaseAuth=firebase.auth();firestore=firebase.firestore();cloudReady=true;setCloudStatus(firebaseAuth.currentUser?"☁️ Cloud Connected":"☁️ Cloud Login");firebaseAuth.onAuthStateChanged(async user=>{if(user){setCloudStatus("☁️ Cloud Connected");await loadCloudData()}else{setCloudStatus("🔐 Login Required")}});return true}catch(e){console.error(e);setCloudStatus("⚠️ Cloud Error");return false}}
-async function loadCloudData(){if(!firestore||!firebaseAuth.currentUser)return;try{const ref=firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm").doc("main");const snap=await ref.get();if(snap.exists){const remote=snap.data().data; if(remote){db=Object.assign(emptyDB(),remote);db.services=db.services.map(s=>normalizeService(s,db));syncCustomerAMCFields(db);localStorage.setItem(KEY,JSON.stringify(db));renderAll();toast("Cloud data loaded")} }else{await syncCloudData(true)}}catch(e){console.error(e);toast("Cloud load failed")}}
-async function syncCloudData(silent=false){if(!firestore||!firebaseAuth.currentUser||cloudSyncing)return false;cloudSyncing=true;try{await firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm").doc("main").set({data:db,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),version:"v20.4"},{merge:true});if(!silent)toast("Cloud synced");return true}catch(e){console.error(e);if(!silent)toast("Cloud sync failed");return false}finally{cloudSyncing=false}}
+async function cloudUserBase(){return firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm")}
+async function syncNormalizedCollections(){
+  const base=await cloudUserBase();
+  const keys=["leads","customers","sales","services","amcs","technicians"];
+  for(const key of keys){
+    const col=base.collection(key);
+    const snap=await col.get();
+    const current=new Map((db[key]||[]).map(x=>[String(x.id),x]));
+    const batch=firestore.batch();
+    snap.forEach(doc=>{if(!current.has(doc.id))batch.delete(doc.ref)});
+    current.forEach((item,id)=>batch.set(col.doc(id),item,{merge:true}));
+    await batch.commit();
+  }
+}
+async function loadNormalizedCollections(){
+  const base=await cloudUserBase();
+  const keys=["leads","customers","sales","services","amcs","technicians"];
+  const result=emptyDB();
+  let count=0;
+  for(const key of keys){
+    const snap=await base.collection(key).get();
+    result[key]=snap.docs.map(d=>Object.assign({id:Number(d.id)||d.id},d.data()));
+    count+=snap.size;
+  }
+  if(count===0)return null;
+  result.services=result.services.map(s=>normalizeService(s,result));
+  result.amcs=result.amcs.map(a=>{a.visitsTotal=Number(a.visitsTotal??a.visits??0);if(!Array.isArray(a.visitHistory))a.visitHistory=[];return a});
+  syncCustomerAMCFields(result);
+  return result;
+}
+async function loadCloudData(){
+  if(!firestore||!firebaseAuth.currentUser)return;
+  try{
+    const normalized=await loadNormalizedCollections();
+    if(normalized){
+      db=normalized;
+      localStorage.setItem(KEY,JSON.stringify(db));
+      renderAll();
+      toast("☁️ Cloud data loaded");
+      return;
+    }
+    const ref=firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm").doc("main");
+    const snap=await ref.get();
+    if(snap.exists && snap.data().data){
+      db=Object.assign(emptyDB(),snap.data().data);
+      db.services=db.services.map(s=>normalizeService(s,db));
+      db.amcs=(db.amcs||[]).map(a=>{a.visitsTotal=Number(a.visitsTotal??a.visits??0);if(!Array.isArray(a.visitHistory))a.visitHistory=[];return a});
+      syncCustomerAMCFields(db);
+      localStorage.setItem(KEY,JSON.stringify(db));
+      renderAll();
+      await syncNormalizedCollections();
+      toast("☁️ Cloud data migrated");
+    }else{
+      await syncCloudData(true);
+    }
+  }catch(e){console.error(e);toast("Cloud load failed")}
+}
+async function syncCloudData(silent=false){
+  if(!firestore||!firebaseAuth.currentUser||cloudSyncing)return false;
+  cloudSyncing=true;
+  try{
+    await firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm").doc("main").set({data:db,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),version:"v20.5"},{merge:true});
+    await syncNormalizedCollections();
+    if(!silent)toast("☁️ Cloud synced");
+    return true;
+  }catch(e){console.error(e);if(!silent)toast("Cloud sync failed");return false}
+  finally{cloudSyncing=false}
+}
 function persist(){localStorage.setItem(KEY,JSON.stringify(db));renderAll();if(cloudReady&&firebaseAuth?.currentUser)syncCloudData(true)}
+
 function openCloudSetup(){document.getElementById("firebaseConfigSettings").value=JSON.stringify(getFirebaseConfig()||{},null,2);openModal("cloudSetupModal")}
 function saveFirebaseConfig(){try{const cfg=JSON.parse(document.getElementById("firebaseConfigSettings").value);if(!cfg.apiKey||!cfg.projectId)throw Error();localStorage.setItem(FIREBASE_KEY,JSON.stringify(cfg));closeModal("cloudSetupModal");if(initFirebase())showLoginOverlay()}catch(e){toast("Invalid Firebase config")}}
 function saveFirebaseConfigFromAuth(){try{const cfg=JSON.parse(document.getElementById("firebaseConfigInput").value);if(!cfg.apiKey||!cfg.projectId)throw Error();localStorage.setItem(FIREBASE_KEY,JSON.stringify(cfg));document.getElementById("firebaseSetupBox").style.display="none";document.getElementById("loginBox").style.display="block";document.getElementById("authModeText").textContent="Firebase connected. Login to sync your CRM.";initFirebase()}catch(e){document.getElementById("authMsg").textContent="Invalid Firebase config."}}
@@ -525,7 +599,7 @@ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
 
 function saveLead(e){e.preventDefault();db.leads.unshift({id:Date.now(),name:leadName.value.trim(),mobile:leadMobile.value.trim(),product:leadProduct.value.trim(),source:leadSource.value,follow:leadFollow.value,status:leadStatus.value,notes:leadNotes.value.trim(),created:today});persist();e.target.reset();closeModal("leadModal");toast("Lead saved")}
 function saveCustomer(e){e.preventDefault();const mobile=custMobile.value.trim();if(db.customers.some(x=>x.mobile===mobile)){toast("Customer with this mobile already exists");return}db.customers.unshift({id:Date.now(),name:custName.value.trim(),mobile,product:custProduct.value.trim(),purchase:custPurchase.value,install:custInstall.value,amc:custAMC.value,installStatus:custInstallStatus.value,nextService:custNextService.value,address:custAddress.value.trim(),notes:""});persist();e.target.reset();closeModal("customerModal");toast("Customer saved")}
-function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;if(total<=0){toast("Enter total amount");return}if(paid>total){toast("Paid amount cannot exceed total");return}const c=db.customers.find(x=>x.name.toLowerCase()===saleCustomer.value.trim().toLowerCase());db.sales.unshift({id:Date.now(),date:today,customerId:c?.id||null,customer:saleCustomer.value.trim(),mobile:c?.mobile||"",product:saleProduct.value.trim(),total,amount:total,paid,pending:Math.max(0,total-paid),mode:saleMode.value,paymentStatus:salePaymentStatus({total,paid})});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
+function saveSale(e){e.preventDefault();let total=+saleTotal.value||0,paid=+salePaid.value||0;if(total<=0){toast("Enter total amount");return}if(paid>total){toast("Paid amount cannot exceed total");return}const c=db.customers.find(x=>x.name.toLowerCase()===saleCustomer.value.trim().toLowerCase());const qty=Math.max(1,+document.getElementById("saleQty")?.value||1);db.sales.unshift({id:Date.now(),date:today,customerId:c?.id||null,customer:saleCustomer.value.trim(),mobile:c?.mobile||"",product:saleProduct.value.trim(),qty,warranty:document.getElementById("saleWarranty")?.value.trim()||"",gstin:document.getElementById("saleGSTIN")?.value.trim()||"",total,amount:total,paid,pending:Math.max(0,total-paid),mode:saleMode.value,paymentStatus:salePaymentStatus({total,paid})});persist();e.target.reset();closeModal("saleModal");toast("Sale saved")}
 
 function fillServiceCustomerOptions(selectedId=""){
   const s=document.getElementById("svcCustomer");if(!s)return;
@@ -724,7 +798,60 @@ function renderTech(){techTable.innerHTML=db.technicians.map(x=>`<tr><td>${esc(x
 function renderReports(){const total=db.leads.length,won=db.leads.filter(x=>x.status==="Won").length;rConversion.textContent=(total?Math.round(won/total*100):0)+"%";rCollected.textContent=money(db.sales.reduce((a,x)=>a+Number(x.paid||0),0));rService.textContent=money(db.services.filter(x=>x.status==="Completed").reduce((a,x)=>a+Number(x.amount??x.charge??0),0));rAMC.textContent=money(db.amcs.reduce((a,x)=>a+Number(x.amount||0),0));reportSummary.innerHTML=`<p><b>Leads:</b> ${total}</p><p><b>Won:</b> ${won}</p><p><b>Customers:</b> ${db.customers.length}</p><p><b>Total Sales:</b> ${money(db.sales.reduce((a,x)=>a+Number(x.total||0),0))}</p><p><b>Pending:</b> ${money(db.sales.reduce((a,x)=>a+Number(x.pending||0),0))}</p><p><b>Services:</b> ${db.services.length}</p><p><b>AMC:</b> ${db.amcs.length}</p>`}
 
 function viewInvoice(saleId){const s=db.sales.find(x=>x.id===saleId);if(!s){toast("Sale not found");return}const c=db.customers.find(x=>x.id===s.customerId)||{};currentInvoiceMobile=c.mobile||s.mobile||"";openInvoice(saleId)}
-function openInvoice(saleId){const s=db.sales.find(x=>x.id===saleId);if(!s){toast("Sale not found");return}const c=db.customers.find(x=>x.id===s.customerId)||{};const paid=Number(s.paid||0),total=Number(s.total||0),pending=Math.max(0,total-paid);const inv=s.invoiceNo||("PWS-"+String(saleId).padStart(5,"0"));s.invoiceNo=inv;persist();document.getElementById("invoicePreview").innerHTML=`<div class="inv-head"><div><h2>PURIXA WATER SOLUTION</h2><div>Water Purifier • RO Sales • Service • AMC</div></div><div><b>Invoice No:</b> ${esc(inv)}<br><b>Date:</b> ${esc(s.date||today)}</div></div><p><b>Customer:</b> ${esc(c.name||s.customer||"-")}<br><b>Mobile:</b> ${esc(c.mobile||s.mobile||"-")}<br><b>Address:</b> ${esc(c.address||"-")}</p><table><thead><tr><th>Product / Description</th><th>Qty</th><th>Amount</th></tr></thead><tbody><tr><td>${esc(s.product||"RO Purifier")}</td><td>1</td><td>${money(total)}</td></tr></tbody></table><div class="totals"><div><b>Total</b><b>${money(total)}</b></div><div>Paid <span>${money(paid)}</span></div><div><b>Pending</b><b>${money(pending)}</b></div></div><p style="margin-top:24px">Thank you for choosing Purixa Water Solution.</p>`;openModal("invoiceModal")}
+function numberWords(n){
+  n=Math.round(Number(n)||0);
+  if(n===0)return "Zero";
+  const ones=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+  const tens=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+  function two(x){return x<20?ones[x]:tens[Math.floor(x/10)]+(x%10?" "+ones[x%10]:"")}
+  function three(x){return x<100?two(x):ones[Math.floor(x/100)]+" Hundred"+(x%100?" "+two(x%100):"")}
+  let out="";
+  if(n>=10000000){out+=three(Math.floor(n/10000000))+" Crore ";n%=10000000}
+  if(n>=100000){out+=three(Math.floor(n/100000))+" Lakh ";n%=100000}
+  if(n>=1000){out+=three(Math.floor(n/1000))+" Thousand ";n%=1000}
+  if(n)out+=three(n);
+  return out.trim();
+}
+function openInvoice(saleId){
+  const s=db.sales.find(x=>x.id===saleId);if(!s){toast("Sale not found");return}
+  const c=db.customers.find(x=>x.id===s.customerId)||{};
+  const paid=Number(s.paid||0),total=Number(s.total||s.amount||0),pending=Math.max(0,total-paid);
+  const inv=s.invoiceNo||("PWS-"+String(saleId).padStart(5,"0"));s.invoiceNo=inv;
+  const mode=String(s.mode||"Cash");
+  const checks=["Cash","Cheque","UPI","Online Transfer","POS","Finance","EMI"].map(x=>`<span>${mode===x?"☑":"☐"} ${x}</span>`).join("");
+  const qty=Math.max(1,Number(s.qty||1));const price=total/qty;
+  const warranty=s.warranty||"";
+  const gstin=s.gstin||"";
+  const address=c.address||s.address||"-";
+  document.getElementById("invoicePreview").innerHTML=`
+  <div class="pws-head">
+    <div class="pws-logo"><div class="pws-mark">P<br><span style="font-size:12px">💧</span></div></div>
+    <div class="pws-title"><h2>PURIXA WATER SOLUTION</h2><div>Nr. Harihar Chowk, Sadar Bazar, Sadar,<br>Rajkot, Gujarat 360001<br>☎ 9998267304 / 7016715463</div></div>
+    <div class="pws-inv"><b>INVOICE</b><div>Bill No. : <strong>${esc(inv.replace(/^PWS-/,""))}</strong><br>Date : <u>${esc(s.date||today)}</u></div></div>
+  </div>
+  <div class="bill-info">
+    <div class="row"><b>Customer Name :</b><span>${esc(c.name||s.customer||"-")}</span><b>Mobile No. :</b><span>${esc(c.mobile||s.mobile||"-")}</span></div>
+    <div class="row"><b>Address :</b><span>${esc(address)}</span><span></span><span></span></div>
+  </div>
+  <div class="pay"><b>Mode of Payment:</b><div class="checks">${checks}</div></div>
+  <table class="bill-table"><thead><tr><th>Sr. No.</th><th>Item Description</th><th>Qty.</th><th>Price</th><th>Amount Rs.</th></tr></thead>
+  <tbody><tr><td style="text-align:center">1</td><td>${esc(s.product||"Open Water Purifier")}</td><td>${qty}</td><td>${price.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td>${total.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
+  <tr style="height:210px"><td></td><td></td><td></td><td></td><td></td></tr></tbody></table>
+  <div class="words"><b>Rupees :</b> ${esc(numberWords(total))} Only</div>
+  <div class="bottom-grid">
+    <div class="terms"><div><b>GSTIN :</b> ${esc(gstin||"________________")}</div><br>
+    <b>Warranty & Service Details :</b> ${esc(warranty||"________________________________")}<br><br>
+    (1) सर्विस हेतु शिकायत के 2 दिवस पश्चात होल्ड आने पर चार्ज आपमाना रहेगा।<br>
+    (2) वारंटी पीरियड पश्चात होल्ड आने पर सर्विस चार्ज आपमाना रहेगा।<br>
+    (3) पार्ट्स बदलने का चार्ज अलग रहेगा।<br>
+    (4) टेक्नीशियन द्वारा बनाये वस्तु एक की स्वीकार करनी होगी।<br>
+    (5) Subject to Rajkot Jurisdiction
+    </div>
+    <div class="totalbox"><div><b>Total Rs.</b><b>${total.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</b></div><div><span>Dues (if any)</span><b>${pending.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</b></div></div>
+  </div>
+  <div class="footer"><div class="sig"><div class="sig-line">Customer's Signature</div></div><div class="sig"><div class="for">For, PURIXA WATER SOLUTION</div><div class="sig-line">Authorised Signatory</div></div></div>`;
+  persist();openModal("invoiceModal")
+}
 function shareInvoiceWhatsApp(){const text=document.getElementById("invoicePreview").innerText;wa(currentInvoiceMobile,text)}
 
 function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSales();renderServices();renderAMC();renderTech();renderReports();renderReminders()}
