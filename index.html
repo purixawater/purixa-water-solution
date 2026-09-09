@@ -53,6 +53,9 @@ th{background:#f8fafc;color:#53677d}
 @media(max-width:900px){.sidebar{width:72px}.brand{font-size:0}.brand-logo{width:48px;height:48px;padding:2px;margin:0 auto 8px}.brand small{display:none}.nav button{font-size:0;text-align:center}.nav button:before{font-size:20px}.nav button[data-page="dashboard"]:before{content:"🏠"}.nav button[data-page="leads"]:before{content:"🎯"}.nav button[data-page="customers"]:before{content:"👥"}.nav button[data-page="sales"]:before{content:"💰"}.nav button[data-page="service"]:before{content:"🔧"}.nav button[data-page="amc"]:before{content:"🔄"}.nav button[data-page="technicians"]:before{content:"👨‍🔧"}.nav button[data-page="reports"]:before{content:"📊"}.nav button[data-page="reminders"]:before{content:"🔔"}.nav button[data-page="settings"]:before{content:"⚙️"}.main{margin-left:72px;width:calc(100% - 72px)}.cards{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
 @media(max-width:560px){.main{padding:12px}.modal-box .cards{grid-template-columns:repeat(2,1fr)!important}.cards{grid-template-columns:1fr 1fr;gap:8px}.card{padding:12px}.metric{font-size:21px}.form-grid{grid-template-columns:1fr}.top h1{font-size:20px}.btn{padding:9px 10px}}
 @media print{body>*:not(#invoiceModal){display:none!important}#invoiceModal{display:block!important;position:static}.modal-box{box-shadow:none!important;width:100%!important;max-width:none!important}}
+
+.invoice .bill-info .name-row>span{min-height:24px;padding:1px 4px}.invoice .bill-info .mobile-row>span{min-height:24px;padding:1px 4px}.invoice .bill-info b{white-space:nowrap}
+@media(max-width:700px){.invoice .bill-info .name-row{grid-template-columns:90px minmax(0,1fr)}.invoice .bill-info .mobile-row{grid-template-columns:90px minmax(0,1fr) 70px minmax(0,1fr);gap:4px}.invoice .bill-info .mobile-row b{font-size:10px}.invoice .bill-info .row>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 </style>
 
 <style>
@@ -60,7 +63,7 @@ th{background:#f8fafc;color:#53677d}
 .invoice *{box-sizing:border-box}.invoice .pws-head{display:grid;grid-template-columns:145px minmax(0,1fr) 155px;border-bottom:2px solid #173d91}
 .invoice .pws-logo{display:flex;align-items:center;justify-content:center;border-right:1px solid #173d91;padding:6px 8px}.invoice .pws-mark{width:54px;height:54px;border:3px solid #173d91;border-radius:5px;color:#173d91;font-weight:900;font-size:25px;display:flex;align-items:center;justify-content:center;line-height:1}
 .invoice .pws-title{padding:9px 12px}.invoice .pws-title h2{margin:0;color:#173d91;font-size:24px;letter-spacing:.35px;font-weight:800}.invoice .pws-title div{font-size:13px;line-height:1.35}.invoice .pws-inv{border-left:1px solid #173d91;text-align:center}.invoice .pws-inv b{display:block;background:#173d91;color:#fff;padding:8px;font-size:18px}.invoice .pws-inv div{padding:8px;font-size:13px}.invoice .pws-inv strong{color:#b51616;font-size:22px}
-.invoice .bill-info{padding:9px 12px;border-bottom:1px solid #173d91}.invoice .bill-info .row{display:grid;grid-template-columns:130px minmax(0,1fr) 90px minmax(0,1fr);gap:6px;margin:3px 0;align-items:end}.invoice .bill-info .row>span{border-bottom:1px solid #173d91;min-height:19px;padding:1px 3px}.invoice .pay{padding:7px 12px;border-bottom:1px solid #173d91;font-size:13px}.invoice .checks{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}.invoice .checks span{white-space:nowrap}
+.invoice .bill-info{padding:9px 12px;border-bottom:1px solid #173d91}.invoice .bill-info .row{display:grid;grid-template-columns:130px minmax(0,1fr) 90px minmax(0,1fr);gap:6px;margin:3px 0;align-items:end}.invoice .bill-info .name-row{grid-template-columns:130px minmax(0,1fr)}.invoice .bill-info .row>span{border-bottom:1px solid #173d91;min-height:19px;padding:1px 3px}.invoice .pay{padding:7px 12px;border-bottom:1px solid #173d91;font-size:13px}.invoice .checks{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px}.invoice .checks span{white-space:nowrap}
 .invoice .bill-table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:0}.invoice .bill-table th,.invoice .bill-table td{border:1px solid #173d91;padding:8px;text-align:left;font-size:13px;overflow-wrap:anywhere}.invoice .bill-table th{text-align:center;background:#f5f7fb}.invoice .bill-table th:nth-child(1){width:7%}.invoice .bill-table th:nth-child(2){width:46%}.invoice .bill-table th:nth-child(3){width:10%}.invoice .bill-table th:nth-child(4){width:18%;text-align:right}.invoice .bill-table th:nth-child(5){width:19%;text-align:right}.invoice .bill-table td:nth-child(n+3){text-align:right}
 .invoice .words{padding:8px 12px;border-bottom:1px solid #173d91;font-size:13px}.invoice .bottom-grid{display:grid;grid-template-columns:minmax(0,1fr) 230px}.invoice .terms{padding:8px 12px;border-right:1px solid #173d91;font-size:12px;line-height:1.5}.invoice .terms b{color:#173d91}.invoice .totalbox>div{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid #173d91;font-size:13px}.invoice .footer{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #173d91;min-height:95px}.invoice .sig{padding:35px 12px 8px;text-align:center;font-size:12px}.invoice .sig:first-child{border-right:1px solid #173d91}.invoice .sig-line{border-top:1px solid #333;margin-top:18px;padding-top:5px}.invoice .for{color:#173d91;font-weight:700;font-size:16px;margin-bottom:8px}
 @media(max-width:700px){.invoice{max-width:100%;font-size:11px}.invoice .pws-head{grid-template-columns:110px minmax(0,1fr) 112px}.invoice .pws-mark{width:44px;height:44px;font-size:20px}.invoice .pws-title h2{font-size:17px}.invoice .pws-title div{font-size:10px}.invoice .pws-inv strong{font-size:16px}.invoice .bill-info .row{grid-template-columns:90px minmax(0,1fr)}.invoice .bottom-grid{grid-template-columns:minmax(0,1fr) 150px}.invoice .checks{gap:6px}.invoice .bill-table th,.invoice .bill-table td{padding:5px;font-size:10px}.invoice .bill-table th:nth-child(1){width:8%}.invoice .bill-table th:nth-child(2){width:42%}.invoice .bill-table th:nth-child(3){width:11%}.invoice .bill-table th:nth-child(4){width:19%}.invoice .bill-table th:nth-child(5){width:20%}}
@@ -891,7 +894,7 @@ function openInvoice(saleId){
     <div class="pws-inv"><b>INVOICE</b><div>Bill No. : <strong>${esc(inv.replace(/^PWS-/,""))}</strong><br>Date : <u>${esc(formatInvoiceDate(s.date||today))}</u></div></div>
   </div>
   <div class="bill-info">
-    <div class="row"><b>Customer Name :</b><span>${esc(c.name||s.customer||"-")}</span></div>
+    <div class="row name-row"><b>Customer Name :</b><span>${esc(c.name||s.customer||"-")}</span></div>
     <div class="row mobile-row"><b>Address :</b><span>${esc(address)}</span><b>Mobile No. :</b><span>${esc(c.mobile||s.mobile||"-")}</span></div>
   </div>
   <div class="pay"><b>Mode of Payment:</b><div class="checks">${checks}</div></div>
@@ -903,12 +906,12 @@ function openInvoice(saleId){
       <div class="words"><b>Rupees :</b> ${esc(numberWords(total))} Only</div>
       <div class="warranty"><b>Warranty & Service Details :</b> ${esc(warranty||"1 Year – Electric Part Only")}</div>
       <div class="gst"><b>GSTIN :</b> ${esc(gstin||"________________")}</div>
-      <div class="terms"><b>नियम एवं शर्ते :</b><br>
-      (1) सर्विस हेतु शिकायत के 2 दिवस पश्चात होल्ड आने पर चार्ज आपमाना रहेगा।<br>
-      (2) वारंटी पीरियड पश्चात होल्ड आने पर सर्विस चार्ज आपमाना रहेगा।<br>
-      (3) पार्ट्स बदलने का चार्ज अलग रहेगा।<br>
-      (4) टेक्नीशियन द्वारा बनाये वस्तु एक की स्वीकृति लेनी होगी।<br>
-      (5) Subject to Rajkot Jurisdiction</div>
+      <div class="terms"><b>નિયમો અને શરતો :</b><br>
+      (1) સર્વિસ માટે ફરિયાદ કર્યા પછી 2 દિવસ બાદ હોલ્ડ આવે તો ચાર્જ આપવાનો રહેશે.<br>
+      (2) વોરંટી પિરિયડ બાદ હોલ્ડ આવે તો સર્વિસ ચાર્જ આપવાનો રહેશે.<br>
+      (3) પાર્ટ્સ બદલવાનો ચાર્જ અલગ રહેશે.<br>
+      (4) ટેક્નિશિયન દ્વારા બનાવેલ વસ્તુ એક વાર સ્વીકારી લેવી પડશે.<br>
+      (5) રાજકોટ જ્યુરિસ્ડિક્શનને આધીન.</div>
     </div>
     <div class="totalbox"><div><b>Total Rs.</b><b>${total.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</b></div><div><span>Dues (if any)</span><b>${pending.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</b></div></div>
   </div>
