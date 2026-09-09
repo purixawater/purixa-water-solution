@@ -94,7 +94,30 @@ th{background:#f8fafc;color:#53677d}
 .invoice .summary{display:grid;grid-template-columns:minmax(0,1fr) 230px}.invoice .summary-left{font-size:12px}.invoice .words{padding:8px 12px;border-bottom:1px solid #173d91;font-size:13px;min-height:40px}.invoice .warranty{padding:8px 12px;border-bottom:1px solid #173d91;font-size:13px;min-height:38px}.invoice .gst{padding:8px 12px;font-size:13px}.invoice .terms{padding:2px 12px 8px;font-size:11px;line-height:1.45}.invoice .totalbox{border-left:1px solid #173d91}.invoice .totalbox>div{min-height:43px;align-items:center}
 @media(max-width:700px){.invoice .pws-head{grid-template-columns:85px minmax(0,1fr) 105px}.invoice .pws-logo img{width:78px;height:70px}.invoice .bill-info .row,.invoice .bill-info .row.mobile-row{grid-template-columns:90px minmax(0,1fr)}.invoice .summary{grid-template-columns:minmax(0,1fr) 150px}.invoice .bill-table th:nth-child(1){width:8%}.invoice .bill-table th:nth-child(2){width:45%}.invoice .bill-table th:nth-child(3){width:11%}.invoice .bill-table th:nth-child(4){width:18%}.invoice .bill-table th:nth-child(5){width:18%}}
 @media print{.invoice .pws-head{grid-template-columns:105px minmax(0,1fr) 155px}.invoice .pws-logo img{width:94px;height:82px}.invoice .bill-table th:nth-child(1){width:8%}.invoice .bill-table th:nth-child(2){width:54%}.invoice .bill-table th:nth-child(3){width:9%}.invoice .bill-table th:nth-child(4){width:14.5%}.invoice .bill-table th:nth-child(5){width:14.5%}}
-</style></head>
+</style>
+<style>
+/* v21.5 FINAL invoice viewport/alignment fix */
+#invoiceModal .modal-box{width:min(96vw, 980px)!important;max-width:980px!important;overflow:auto!important;padding:18px!important}
+#invoiceModal #invoicePreview{width:100%;overflow-x:auto}
+.invoice{width:100%!important;max-width:190mm!important;margin:0 auto!important;overflow:hidden!important}
+.invoice .pws-head{grid-template-columns:110px minmax(0,1fr) 155px!important;min-height:82px}
+.invoice .pws-logo{padding:6px!important;overflow:hidden!important}
+.invoice .pws-logo img{display:block;width:94px!important;height:70px!important;max-width:100%!important;max-height:70px!important;object-fit:contain!important;margin:auto!important}
+.invoice .pws-title{padding:9px 12px!important;min-width:0!important}
+.invoice .pws-title h2{font-size:24px!important;white-space:nowrap!important}
+.invoice .pws-inv{min-width:0!important}
+@media(max-width:700px){
+ #invoiceModal .modal-box{width:calc(100vw - 18px)!important;max-width:none!important;padding:10px!important}
+ .invoice{max-width:none!important}
+ .invoice .pws-head{grid-template-columns:88px minmax(0,1fr) 108px!important}
+ .invoice .pws-logo img{width:76px!important;height:64px!important}
+ .invoice .pws-title h2{font-size:16px!important;white-space:normal!important;line-height:1.1!important}
+ .invoice .pws-title div{font-size:9px!important}
+ .invoice .pws-inv b{font-size:14px!important}
+ .invoice .pws-inv div{font-size:10px!important;padding:6px!important}
+}
+</style>
+</head>
 <body>
 <div id="authOverlay">
   <div class="auth-box">
