@@ -1,4 +1,4 @@
-const CACHE_NAME = "purixa-crm-pwa-v21.4";
+const CACHE_NAME = "purixa-crm-pwa-v21.5";
 const APP_SHELL = ["./","./index.html","./manifest.json","./icon-192.png","./icon-512.png","./purixa-logo.png"];
 
 self.addEventListener("install", event => {
