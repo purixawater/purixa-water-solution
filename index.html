@@ -87,7 +87,14 @@ th{background:#f8fafc;color:#53677d}
 #pwaInstallBtn.show{display:block}
 </style>
 
-</head>
+<style id="invoice-exact-v215">
+.invoice .pws-head{grid-template-columns:105px minmax(0,1fr) 155px}.invoice .pws-logo{padding:5px}.invoice .pws-logo img{width:94px;height:82px;max-width:100%;max-height:82px;object-fit:contain}.invoice .pws-inv div{line-height:1.8}
+.invoice .bill-info .row{grid-template-columns:130px minmax(0,1fr)}.invoice .bill-info .row.mobile-row{grid-template-columns:130px minmax(0,1fr) 90px minmax(0,1fr)}
+.invoice .bill-table th:nth-child(1){width:8%}.invoice .bill-table th:nth-child(2){width:54%}.invoice .bill-table th:nth-child(3){width:9%}.invoice .bill-table th:nth-child(4){width:14.5%}.invoice .bill-table th:nth-child(5){width:14.5%}.invoice .bill-table tbody tr.item-spacer{height:210px}
+.invoice .summary{display:grid;grid-template-columns:minmax(0,1fr) 230px}.invoice .summary-left{font-size:12px}.invoice .words{padding:8px 12px;border-bottom:1px solid #173d91;font-size:13px;min-height:40px}.invoice .warranty{padding:8px 12px;border-bottom:1px solid #173d91;font-size:13px;min-height:38px}.invoice .gst{padding:8px 12px;font-size:13px}.invoice .terms{padding:2px 12px 8px;font-size:11px;line-height:1.45}.invoice .totalbox{border-left:1px solid #173d91}.invoice .totalbox>div{min-height:43px;align-items:center}
+@media(max-width:700px){.invoice .pws-head{grid-template-columns:85px minmax(0,1fr) 105px}.invoice .pws-logo img{width:78px;height:70px}.invoice .bill-info .row,.invoice .bill-info .row.mobile-row{grid-template-columns:90px minmax(0,1fr)}.invoice .summary{grid-template-columns:minmax(0,1fr) 150px}.invoice .bill-table th:nth-child(1){width:8%}.invoice .bill-table th:nth-child(2){width:45%}.invoice .bill-table th:nth-child(3){width:11%}.invoice .bill-table th:nth-child(4){width:18%}.invoice .bill-table th:nth-child(5){width:18%}}
+@media print{.invoice .pws-head{grid-template-columns:105px minmax(0,1fr) 155px}.invoice .pws-logo img{width:94px;height:82px}.invoice .bill-table th:nth-child(1){width:8%}.invoice .bill-table th:nth-child(2){width:54%}.invoice .bill-table th:nth-child(3){width:9%}.invoice .bill-table th:nth-child(4){width:14.5%}.invoice .bill-table th:nth-child(5){width:14.5%}}
+</style></head>
 <body>
 <div id="authOverlay">
   <div class="auth-box">
@@ -835,6 +842,7 @@ function numberWords(n){
   if(n)out+=three(n);
   return out.trim();
 }
+function formatInvoiceDate(v){const x=String(v||"");if(/^\d{4}-\d{2}-\d{2}$/.test(x)){const [y,m,d]=x.split("-");return `${d}/${m}/${y}`}return x}
 function nextBillNumber(){
   const nums=db.sales.map(x=>String(x.invoiceNo||"").replace(/^PWS-/i,"").trim()).map(x=>/^\d+$/.test(x)&&Number(x)>=1&&Number(x)<=999999?Number(x):0);
   const maxExisting=Math.max(0,...nums);
@@ -857,25 +865,27 @@ function openInvoice(saleId){
   <div class="pws-head">
     <div class="pws-logo"><img src="purixa-logo.png" alt="Purixa Water Solution"></div>
     <div class="pws-title"><h2>PURIXA WATER SOLUTION</h2><div>Nr. Harihar Chowk, Sadar Bazar, Sadar,<br>Rajkot, Gujarat 360001<br>☎ 9998267304 / 7016715463</div></div>
-    <div class="pws-inv"><b>INVOICE</b><div>Bill No. : <strong>${esc(inv.replace(/^PWS-/,""))}</strong><br>Date : <u>${esc(s.date||today)}</u></div></div>
+    <div class="pws-inv"><b>INVOICE</b><div>Bill No. : <strong>${esc(inv.replace(/^PWS-/,""))}</strong><br>Date : <u>${esc(formatInvoiceDate(s.date||today))}</u></div></div>
   </div>
   <div class="bill-info">
-    <div class="row"><b>Customer Name :</b><span>${esc(c.name||s.customer||"-")}</span><b>Mobile No. :</b><span>${esc(c.mobile||s.mobile||"-")}</span></div>
-    <div class="row"><b>Address :</b><span>${esc(address)}</span><span></span><span></span></div>
+    <div class="row"><b>Customer Name :</b><span>${esc(c.name||s.customer||"-")}</span></div>
+    <div class="row mobile-row"><b>Address :</b><span>${esc(address)}</span><b>Mobile No. :</b><span>${esc(c.mobile||s.mobile||"-")}</span></div>
   </div>
   <div class="pay"><b>Mode of Payment:</b><div class="checks">${checks}</div></div>
   <table class="bill-table"><thead><tr><th>Sr. No.</th><th>Item Description</th><th>Qty.</th><th>Price</th><th>Amount Rs.</th></tr></thead>
   <tbody><tr><td style="text-align:center">1</td><td>${esc(s.product||"Open Water Purifier")}</td><td>${qty}</td><td>${price.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</td><td>${total.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</td></tr>
-  <tr style="height:210px"><td></td><td></td><td></td><td></td><td></td></tr></tbody></table>
-  <div class="words"><b>Rupees :</b> ${esc(numberWords(total))} Only</div>
-  <div class="bottom-grid">
-    <div class="terms"><div><b>GSTIN :</b> ${esc(gstin||"________________")}</div><br>
-    <b>Warranty & Service Details :</b> ${esc(warranty||"________________________________")}<br><br>
-    (1) सर्विस हेतु शिकायत के 2 दिवस पश्चात होल्ड आने पर चार्ज आपमाना रहेगा।<br>
-    (2) वारंटी पीरियड पश्चात होल्ड आने पर सर्विस चार्ज आपमाना रहेगा।<br>
-    (3) पार्ट्स बदलने का चार्ज अलग रहेगा।<br>
-    (4) टेक्नीशियन द्वारा बनाये वस्तु एक की स्वीकार करनी होगी।<br>
-    (5) Subject to Rajkot Jurisdiction
+  <tr class="item-spacer"><td></td><td></td><td></td><td></td><td></td></tr></tbody></table>
+  <div class="summary">
+    <div class="summary-left">
+      <div class="words"><b>Rupees :</b> ${esc(numberWords(total))} Only</div>
+      <div class="warranty"><b>Warranty & Service Details :</b> ${esc(warranty||"1 Year – Electric Part Only")}</div>
+      <div class="gst"><b>GSTIN :</b> ${esc(gstin||"________________")}</div>
+      <div class="terms"><b>नियम एवं शर्ते :</b><br>
+      (1) सर्विस हेतु शिकायत के 2 दिवस पश्चात होल्ड आने पर चार्ज आपमाना रहेगा।<br>
+      (2) वारंटी पीरियड पश्चात होल्ड आने पर सर्विस चार्ज आपमाना रहेगा।<br>
+      (3) पार्ट्स बदलने का चार्ज अलग रहेगा।<br>
+      (4) टेक्नीशियन द्वारा बनाये वस्तु एक की स्वीकृति लेनी होगी।<br>
+      (5) Subject to Rajkot Jurisdiction</div>
     </div>
     <div class="totalbox"><div><b>Total Rs.</b><b>${total.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</b></div><div><span>Dues (if any)</span><b>${pending.toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2})}</b></div></div>
   </div>
