@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v22.3 PWA</title>
+<title>Purixa CRM Cloud — v22.4 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -125,7 +125,7 @@ th{background:#f8fafc;color:#53677d}
 <div id="authOverlay">
   <div class="auth-box">
     <img class="auth-logo" src="purixa-logo.png" alt="Purixa Water Solution">
-    <h2>☁️ Purixa CRM Cloud v21.5</h2>
+    <h2>☁️ Purixa CRM Cloud v22.4</h2>
     <p class="mini" id="authModeText">Cloud login is enabled after Firebase setup.</p>
     <div id="firebaseSetupBox">
       <label class="mini">Firebase Config JSON</label>
@@ -377,7 +377,7 @@ th{background:#f8fafc;color:#53677d}
 <div class="modal" id="serviceModal"><div class="modal-box">
 <div class="modal-head"><h3 id="serviceModalTitle">New Service Request</h3><button class="close" onclick="closeModal('serviceModal')">×</button></div>
 <form onsubmit="saveService(event)"><div class="form-grid">
-<div class="field"><label>Customer *</label><select id="svcCustomer" required><option value="">Select Customer</option></select></div>
+<div class="field"><label>Customer *</label><div style="display:flex;gap:8px;align-items:center"><select id="svcCustomer" required style="flex:1"><option value="">Select Customer</option></select><button type="button" class="btn primary" onclick="openServiceNewCustomer()">＋ New Customer</button></div><div class="mini" style="margin-top:5px">Naya customer yahin se add karein — save hote hi Customers me bhi save aur Service se link ho jayega.</div></div>
 <div class="field"><label>Mobile</label><input id="svcMobile" readonly></div>
 <div class="field"><label>Problem / Service Type *</label><select id="svcProblem" required><option value="">Select Service</option><option>General Service</option><option>Filter Change</option><option>RO / Membrane</option><option>Pump Problem</option><option>Leakage</option><option>Water Quality</option><option>Installation</option><option>Other</option></select></div>
 <div class="field"><label>Technician</label><select id="svcTech"><option value="">Unassigned</option></select></div>
@@ -390,6 +390,17 @@ th{background:#f8fafc;color:#53677d}
 </div></div>
 
 <div class="modal" id="serviceDetailModal"><div class="modal-box"><div class="modal-head"><h3>Service Details</h3><button class="close" onclick="closeModal('serviceDetailModal')">×</button></div><div id="serviceDetail"></div></div></div>
+
+<!-- New Customer from Service -->
+<div class="modal" id="serviceNewCustomerModal"><div class="modal-box">
+<div class="modal-head"><h3>＋ New Customer for Service</h3><button class="close" onclick="closeModal('serviceNewCustomerModal')">×</button></div>
+<form onsubmit="saveServiceNewCustomer(event)"><div class="form-grid">
+<div class="field"><label>Name *</label><input id="svcNewCustName" required></div>
+<div class="field"><label>Mobile *</label><input id="svcNewCustMobile" required inputmode="tel"></div>
+<div class="field"><label>Product / Model</label><input id="svcNewCustProduct"></div>
+<div class="field full"><label>Address</label><textarea id="svcNewCustAddress" rows="3"></textarea></div>
+</div><div class="actions"><button type="button" class="btn" onclick="closeModal('serviceNewCustomerModal')">Cancel</button><button class="btn primary">💾 Save & Select Customer</button></div></form>
+</div></div>
 
 <!-- AMC Modal -->
 <div class="modal" id="amcModal"><div class="modal-box">
@@ -607,7 +618,7 @@ async function syncCloudData(silent=false){
   if(!firestore||!firebaseAuth.currentUser||cloudSyncing)return false;
   cloudSyncing=true;
   try{
-    await firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm").doc("main").set({data:db,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),version:"v21.5"},{merge:true});
+    await firestore.collection("users").doc(firebaseAuth.currentUser.uid).collection("crm").doc("main").set({data:db,updatedAt:firebase.firestore.FieldValue.serverTimestamp(),version:"v22.4"},{merge:true});
     await syncNormalizedCollections();
     if(!silent)toast("☁️ Cloud synced");
     return true;
@@ -663,6 +674,39 @@ function fillServiceCustomerOptions(selectedId=""){
   const date=document.getElementById("svcDate");if(date&&!date.value)date.value=today;
 }
 document.getElementById("svcCustomer")?.addEventListener("change",()=>{const c=db.customers.find(x=>x.id===Number(svcCustomer.value));svcMobile.value=c?.mobile||""});
+function openServiceNewCustomer(){
+  closeModal("serviceModal");
+  document.getElementById("svcNewCustName").value="";
+  document.getElementById("svcNewCustMobile").value="";
+  document.getElementById("svcNewCustProduct").value="";
+  document.getElementById("svcNewCustAddress").value="";
+  openModal("serviceNewCustomerModal");
+}
+function saveServiceNewCustomer(e){
+  e.preventDefault();
+  const name=document.getElementById("svcNewCustName").value.trim();
+  const mobile=document.getElementById("svcNewCustMobile").value.trim();
+  const product=document.getElementById("svcNewCustProduct").value.trim();
+  const address=document.getElementById("svcNewCustAddress").value.trim();
+  if(!name||!mobile){toast("Name and mobile are required");return}
+  const norm=m=>String(m||"").replace(/\D/g,"");
+  let c=db.customers.find(x=>norm(x.mobile)===norm(mobile));
+  if(c){
+    if(address)c.address=address;
+    if(product&&!c.product)c.product=product;
+    persist();
+    closeModal("serviceNewCustomerModal");
+    openServiceModal(c.id);
+    toast("Existing customer found — selected for service");
+    return;
+  }
+  c={id:Date.now(),name,mobile,product,purchase:today,install:"",amc:"",installStatus:"Pending",nextService:"",address,notes:""};
+  db.customers.unshift(c);
+  persist();
+  closeModal("serviceNewCustomerModal");
+  openServiceModal(c.id);
+  toast("New customer saved and selected for service");
+}
 function openServiceModal(customerId=""){
   editingServiceId=null;document.getElementById("serviceModalTitle").textContent="New Service Request";
   fillServiceCustomerOptions(customerId);document.getElementById("svcMobile").value="";document.getElementById("svcProblem").value="";document.getElementById("svcTech").value="";document.getElementById("svcStatus").value="Open";document.getElementById("svcAmount").value="0";document.getElementById("svcDate").value=today;document.getElementById("svcFollow").value="";document.getElementById("svcNotes").value="";
