@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v22.1 PWA</title>
+<title>Purixa CRM Cloud — v22.2 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -956,6 +956,7 @@ function printInvoiceForPDF(){
   <script>window.addEventListener('load',function(){setTimeout(function(){window.focus();window.print();},500)});<\/script></body></html>`);
   w.document.close();
   toast("Print window open ho raha hai — Destination me Save as PDF select karein.");
+  return w;
 }
 
 async function downloadInvoicePDF(){
@@ -963,19 +964,25 @@ async function downloadInvoicePDF(){
 }
 
 async function shareInvoiceWhatsApp(){
-  /* Desktop Chrome cannot silently attach a locally-created PDF to WhatsApp Web.
-     Open native print -> Save as PDF, then WhatsApp Web can attach that exact PDF. */
-  printInvoiceForPDF();
+  /* Browser security does not allow a GitHub Pages website to silently attach
+     a newly printed local PDF to WhatsApp. We therefore keep the reliable
+     native A4 PDF flow and open the customer's WhatsApp chat only AFTER the
+     print window is closed. This prevents WhatsApp from opening behind the
+     Save-as-PDF dialog. */
   const num=String(currentInvoiceMobile||"").replace(/\D/g,"");
-  setTimeout(()=>{
-    if(num){
-      window.open("https://wa.me/91"+num+"?text="+encodeURIComponent("Purixa Water Solution Invoice — PDF attached."),"_blank");
-      toast("PDF save karein, phir WhatsApp me wahi PDF attach karke Send karein.");
-    }else{
-      window.open("https://web.whatsapp.com/","_blank");
-      toast("PDF save karein, phir WhatsApp Web me PDF attach karke bhejein.");
-    }
-  },900);
+  const msg=encodeURIComponent("Purixa Water Solution Invoice — PDF attached.");
+  const w=printInvoiceForPDF();
+  if(w && typeof w.addEventListener === "function"){
+    try{
+      w.addEventListener("afterprint",()=>{
+        setTimeout(()=>{
+          if(num) window.open("https://wa.me/91"+num+"?text="+msg,"_blank");
+          else window.open("https://web.whatsapp.com/","_blank");
+        },300);
+      },{once:true});
+    }catch(e){}
+  }
+  toast(num ? "PDF Save karein. Print window band karte hi customer ka WhatsApp khulega." : "PDF Save karein. Print window band karte hi WhatsApp khulega.");
 }
 
 function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSales();renderServices();renderAMC();renderTech();renderReports();renderReminders()}
