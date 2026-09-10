@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v21.7 PWA</title>
+<title>Purixa CRM Cloud — v21.8 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -930,21 +930,50 @@ function invoicePdfOptions(){
 async function makeInvoicePDFBlob(){
   const el=document.getElementById("invoicePreview");
   if(!el) throw new Error("Invoice not found");
-  if(typeof html2pdf!=="function") throw new Error("PDF library not loaded");
+  if(typeof html2canvas!=="function" || !window.jspdf || !window.jspdf.jsPDF) throw new Error("PDF library not loaded");
+
+  // IMPORTANT: do not render the clone far outside the viewport. html2canvas can
+  // produce a blank canvas for very large negative offsets on desktop Chrome.
   const clone=el.cloneNode(true);
   clone.id="invoicePdfClone";
   clone.style.width="190mm";
   clone.style.maxWidth="190mm";
   clone.style.margin="0";
   clone.style.background="#fff";
-  clone.style.position="fixed";
-  clone.style.left="-100000px";
+  clone.style.position="absolute";
+  clone.style.left="0";
   clone.style.top="0";
+  clone.style.zIndex="-1";
   clone.style.overflow="visible";
   document.body.appendChild(clone);
   try{
-    const opt=invoicePdfOptions();
-    return await html2pdf().set(opt).from(clone).outputPdf("blob");
+    // Wait one frame so fonts/images/layout are painted before capture.
+    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
+    const canvas=await html2canvas(clone,{
+      scale:2,
+      useCORS:true,
+      allowTaint:false,
+      backgroundColor:"#ffffff",
+      logging:false,
+      imageTimeout:10000,
+      windowWidth:Math.max(document.documentElement.clientWidth,900),
+      scrollX:0,
+      scrollY:0
+    });
+    const img=canvas.toDataURL("image/jpeg",0.98);
+    const pdf=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:"portrait",compress:true});
+    const pageW=210, pageH=297, margin=10;
+    const usableW=pageW-margin*2;
+    const imgH=canvas.height*usableW/canvas.width;
+    if(imgH<=pageH-margin*2){
+      pdf.addImage(img,"JPEG",margin,margin,usableW,imgH);
+    }else{
+      // Keep the complete one-page invoice proportional; it is designed to fit A4.
+      const fitH=pageH-margin*2;
+      const fitW=canvas.width*fitH/canvas.height;
+      pdf.addImage(img,"JPEG",(pageW-fitW)/2,margin,fitW,fitH);
+    }
+    return pdf.output("blob");
   }finally{clone.remove()}
 }
 async function downloadInvoicePDF(){
@@ -961,7 +990,8 @@ async function shareInvoiceWhatsApp(){
     const blob=await makeInvoicePDFBlob();
     const file=new File([blob],invoicePdfFileName(),{type:"application/pdf"});
     // Android/iPhone/PWA: use the native share sheet so the PDF itself can be attached.
-    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if(isMobile && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({title:"Purixa Water Solution Invoice",text:"Purixa Water Solution Invoice",files:[file]});
       return;
     }
