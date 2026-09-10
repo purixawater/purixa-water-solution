@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v21.9 PWA</title>
+<title>Purixa CRM Cloud — v22.0 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -99,7 +99,7 @@ th{background:#f8fafc;color:#53677d}
 @media print{.invoice .pws-head{grid-template-columns:105px minmax(0,1fr) 155px}.invoice .pws-logo img{width:94px;height:82px}.invoice .bill-table th:nth-child(1){width:8%}.invoice .bill-table th:nth-child(2){width:54%}.invoice .bill-table th:nth-child(3){width:9%}.invoice .bill-table th:nth-child(4){width:14.5%}.invoice .bill-table th:nth-child(5){width:14.5%}}
 </style>
 <style>
-/* v21.5 FINAL invoice viewport/alignment fix */
+/* v22.0 FINAL invoice viewport/alignment fix */
 #invoiceModal .modal-box{width:min(96vw, 980px)!important;max-width:980px!important;overflow:auto!important;padding:18px!important}
 #invoiceModal #invoicePreview{width:100%;overflow-x:auto}
 .invoice{width:100%!important;max-width:190mm!important;margin:0 auto!important;overflow:hidden!important}
@@ -924,100 +924,56 @@ function invoicePdfFileName(){
   const inv=(document.querySelector("#invoicePreview .pws-inv strong")?.textContent||"Invoice").trim().replace(/[^a-zA-Z0-9_-]/g,"");
   return `Purixa_Invoice_${inv||"Invoice"}.pdf`;
 }
-function invoicePdfOptions(){
-  return {margin:0,filename:invoicePdfFileName(),image:{type:"jpeg",quality:.98},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff",logging:false},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["avoid-all","css","legacy"]}};
-}
-async function makeInvoicePDFBlob(){
-  const el=document.getElementById("invoicePreview");
-  if(!el) throw new Error("Invoice not found");
-  if(typeof html2canvas!=="function" || !window.jspdf || !window.jspdf.jsPDF){
-    if(typeof html2pdf!=="function") throw new Error("PDF library not loaded");
-  }
 
-  // IMPORTANT: do not render the clone far outside the viewport. html2canvas can
-  // produce a blank canvas for very large negative offsets on desktop Chrome.
-  const clone=el.cloneNode(true);
-  clone.id="invoicePdfClone";
-  clone.style.width="190mm";
-  clone.style.maxWidth="190mm";
-  clone.style.margin="0";
-  clone.style.background="#fff";
-  clone.style.position="absolute";
-  clone.style.left="0";
-  clone.style.top="0";
-  clone.style.zIndex="999999";
-  clone.style.pointerEvents="none";
-  clone.style.overflow="visible";
-  document.body.appendChild(clone);
-  try{
-    // Wait one frame so fonts/images/layout are painted before capture.
-    await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-    if(typeof html2canvas!=="function" || !window.jspdf || !window.jspdf.jsPDF){
-      const opts=invoicePdfOptions();
-      const blob=await html2pdf().set(opts).from(clone).outputPdf("blob");
-      return blob;
+/* v22 FINAL: use the browser's native print engine for PDF creation.
+   This avoids blank PDFs caused by canvas/html2canvas capture on Chrome/Mac. */
+function printInvoiceForPDF(){
+  const invoice=document.getElementById("invoicePreview");
+  if(!invoice){toast("Invoice not found");return}
+  const w=window.open("","_blank","width=900,height=1200");
+  if(!w){toast("Popup blocked. Please allow popups for this site.");return}
+
+  const styles=[...document.querySelectorAll("style")].map(x=>x.outerHTML).join("\n");
+  const links=[...document.querySelectorAll('link[rel="stylesheet"]')].map(x=>x.outerHTML).join("\n");
+  const filename=invoicePdfFileName().replace(/\.pdf$/i,"");
+
+  w.document.open();
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${filename}</title>${links}${styles}
+  <style>
+    html,body{margin:0!important;padding:0!important;background:#fff!important}
+    body{width:210mm!important;min-height:297mm!important}
+    #printInvoiceWrap{width:190mm!important;margin:0 auto!important;padding:0!important;background:#fff!important}
+    #printInvoiceWrap .invoice{width:190mm!important;max-width:190mm!important;margin:0!important;overflow:visible!important}
+    @page{size:A4 portrait;margin:10mm}
+    @media print{
+      html,body{width:210mm!important;background:#fff!important}
+      #printInvoiceWrap{width:190mm!important}
+      .invoice .bill-table tr.item-spacer{height:105mm!important}
     }
-    const canvas=await html2canvas(clone,{
-      scale:2,
-      useCORS:true,
-      allowTaint:false,
-      backgroundColor:"#ffffff",
-      logging:false,
-      imageTimeout:10000,
-      windowWidth:Math.max(document.documentElement.clientWidth,900),
-      scrollX:0,
-      scrollY:0
-    });
-    const img=canvas.toDataURL("image/jpeg",0.98);
-    const pdf=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:"portrait",compress:true});
-    const pageW=210, pageH=297, margin=10;
-    const usableW=pageW-margin*2;
-    const imgH=canvas.height*usableW/canvas.width;
-    if(imgH<=pageH-margin*2){
-      pdf.addImage(img,"JPEG",margin,margin,usableW,imgH);
-    }else{
-      // Keep the complete one-page invoice proportional; it is designed to fit A4.
-      const fitH=pageH-margin*2;
-      const fitW=canvas.width*fitH/canvas.height;
-      pdf.addImage(img,"JPEG",(pageW-fitW)/2,margin,fitW,fitH);
-    }
-    return pdf.output("blob");
-  }finally{clone.remove()}
+  </style></head><body><div id="printInvoiceWrap">${invoice.outerHTML}</div>
+  <script>window.addEventListener('load',function(){setTimeout(function(){window.focus();window.print();},500)});<\/script></body></html>`);
+  w.document.close();
+  toast("Print window open ho raha hai — Destination me Save as PDF select karein.");
 }
+
 async function downloadInvoicePDF(){
-  try{
-    const blob=await makeInvoicePDFBlob();
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=url;a.download=invoicePdfFileName();a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);
-    toast("Invoice PDF downloaded");
-  }catch(e){console.error(e);toast("PDF create nahi hua. Browser me PDF library/load problem hai.")}
+  printInvoiceForPDF();
 }
+
 async function shareInvoiceWhatsApp(){
-  try{
-    const blob=await makeInvoicePDFBlob();
-    const file=new File([blob],invoicePdfFileName(),{type:"application/pdf"});
-    // Android/iPhone/PWA: use the native share sheet so the PDF itself can be attached.
-    const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    if(isMobile && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-      await navigator.share({title:"Purixa Water Solution Invoice",text:"Purixa Water Solution Invoice",files:[file]});
-      return;
-    }
-    // Desktop browsers (including Chrome on Mac) cannot attach a local PDF
-    // to WhatsApp Web programmatically. Download it first, then open the
-    // customer's WhatsApp chat so the user can attach the downloaded PDF.
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),3000);
-    const num=String(currentInvoiceMobile||"").replace(/\D/g,"");
+  /* Desktop Chrome cannot silently attach a locally-created PDF to WhatsApp Web.
+     Open native print -> Save as PDF, then WhatsApp Web can attach that exact PDF. */
+  printInvoiceForPDF();
+  const num=String(currentInvoiceMobile||"").replace(/\D/g,"");
+  setTimeout(()=>{
     if(num){
       window.open("https://wa.me/91"+num+"?text="+encodeURIComponent("Purixa Water Solution Invoice — PDF attached."),"_blank");
-      toast("PDF download ho gaya. WhatsApp khul gaya — PDF attach karke Send karein.");
+      toast("PDF save karein, phir WhatsApp me wahi PDF attach karke Send karein.");
     }else{
       window.open("https://web.whatsapp.com/","_blank");
-      toast("PDF download ho gaya. WhatsApp Web me PDF attach karke bhejein.");
+      toast("PDF save karein, phir WhatsApp Web me PDF attach karke bhejein.");
     }
-  }catch(e){console.error(e);toast("WhatsApp PDF share nahi ho saka. Pehle Download PDF try karein.")}
+  },900);
 }
 
 function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSales();renderServices();renderAMC();renderTech();renderReports();renderReminders()}
