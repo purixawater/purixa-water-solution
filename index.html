@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v21.6 PWA</title>
+<title>Purixa CRM Cloud — v21.7 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -960,16 +960,26 @@ async function shareInvoiceWhatsApp(){
   try{
     const blob=await makeInvoicePDFBlob();
     const file=new File([blob],invoicePdfFileName(),{type:"application/pdf"});
+    // Android/iPhone/PWA: use the native share sheet so the PDF itself can be attached.
     if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
       await navigator.share({title:"Purixa Water Solution Invoice",text:"Purixa Water Solution Invoice",files:[file]});
       return;
     }
+    // Desktop browsers (including Chrome on Mac) cannot attach a local PDF
+    // to WhatsApp Web programmatically. Download it first, then open the
+    // customer's WhatsApp chat so the user can attach the downloaded PDF.
     const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");a.href=url;a.download=file.name;a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);
-    wa(currentInvoiceMobile,"Purixa Water Solution Invoice PDF download ho gaya hai. WhatsApp me PDF attach karke bhej dein.");
-    toast("PDF download ho gaya — WhatsApp me attach karein");
-  }catch(e){console.error(e);toast("WhatsApp PDF share nahi ho saka. Pehle PDF download karke bhejein.")}
+    const a=document.createElement("a");a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),3000);
+    const num=String(currentInvoiceMobile||"").replace(/\D/g,"");
+    if(num){
+      window.open("https://wa.me/91"+num+"?text="+encodeURIComponent("Purixa Water Solution Invoice — PDF attached."),"_blank");
+      toast("PDF download ho gaya. WhatsApp khul gaya — PDF attach karke Send karein.");
+    }else{
+      window.open("https://web.whatsapp.com/","_blank");
+      toast("PDF download ho gaya. WhatsApp Web me PDF attach karke bhejein.");
+    }
+  }catch(e){console.error(e);toast("WhatsApp PDF share nahi ho saka. Download PDF se PDF save karke bhejein.")}
 }
 
 function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSales();renderServices();renderAMC();renderTech();renderReports();renderReminders()}
