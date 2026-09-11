@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#0b6efd">
-<title>Purixa CRM Cloud — v22.8 PWA</title>
+<title>Purixa CRM Cloud — v22.9 PWA</title>
 <style>
 *{box-sizing:border-box}
 :root{--blue:#0b6efd;--dark:#17324d;--bg:#f4f7fb;--card:#fff;--muted:#6b7c93;--line:#e4eaf1;--green:#16a34a;--red:#dc2626;--orange:#f59e0b}
@@ -304,7 +304,7 @@ th{background:#f8fafc;color:#53677d}
       <div class="toolbar">
         <button class="btn" onclick="exportData()">Export Backup</button>
         <button class="btn" onclick="document.getElementById('importFile').click()">Import Backup</button>
-        <button class="btn red" onclick="resetData()">Reset Demo Data</button>
+        <button class="btn red" onclick="safeStartFresh()">🧹 Safe Start Fresh</button>
         <input id="importFile" type="file" accept=".json" style="display:none" onchange="importData(event)">
       </div>
     </div>
@@ -946,7 +946,7 @@ function numberWords(n){
 }
 function formatInvoiceDate(v){const x=String(v||"");if(/^\d{4}-\d{2}-\d{2}$/.test(x)){const [y,m,d]=x.split("-");return `${d}/${m}/${y}`}return x}
 function nextBillNumber(){
-  const nums=[...db.sales,...db.amcs].map(x=>String(x.invoiceNo||"").replace(/^PWS(?:-AMC)?-/i,"").trim()).map(x=>/^\d+$/.test(x)&&Number(x)>=1&&Number(x)<=999999?Number(x):0);
+  const nums=[...db.sales,...db.amcs,...db.services].map(x=>String(x.invoiceNo||x.serviceInvoiceNo||"").replace(/^PWS(?:-AMC|-SVC)?-/i,"").trim()).map(x=>/^\d+$/.test(x)&&Number(x)>=1&&Number(x)<=999999?Number(x):0);
   const maxExisting=Math.max(0,...nums);
   db.invoiceCounter=Math.max(701,Number(db.invoiceCounter||701),maxExisting)+1;
   return String(db.invoiceCounter);
@@ -1063,7 +1063,37 @@ function renderAll(){renderDashboard();renderLeads();renderCustomers();renderSal
 function del(type,id){if(!confirm("Delete this record?"))return;db[type]=db[type].filter(x=>x.id!==id);persist();toast("Deleted")}
 function exportData(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="purixa-crm-backup.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const imported=JSON.parse(r.result);db=Object.assign(emptyDB(),imported);db.sales=(db.sales||[]).map(s=>{s.total=Number(s.total??s.amount??0);s.paid=Number(s.paid||0);if(!Array.isArray(s.payments))s.payments=s.paid>0?[{id:(s.id||Date.now())+1,date:s.date||today,amount:s.paid,mode:s.mode||"Cash",note:"Initial payment"}]:[];return s});db.services=db.services.map(s=>normalizeService(s,db));db.amcs=(db.amcs||[]).map(a=>{if(!a.customerId){const c=db.customers.find(c=>String(c.name).toLowerCase()===String(a.customer||"").toLowerCase());if(c)a.customerId=c.id}a.visitsTotal=Number(a.visitsTotal??a.visits??0);if(!Array.isArray(a.visitHistory))a.visitHistory=[];return a});syncCustomerAMCFields(db);persist();toast("Backup imported")}catch{toast("Invalid backup")}};r.readAsText(f);e.target.value=""}
-function resetData(){if(confirm("Reset all CRM data? This will remove all saved records in this browser.")){db=emptyDB();persist();toast("CRM reset")}}
+async function safeStartFresh(){
+  if(!confirm("⚠️ START FRESH?\n\nThis will permanently delete ALL CRM records for the currently logged-in Firebase account and this browser: Leads, Customers, Sales, Services, AMC and Technicians.\n\nYour CRM files, logo, signature, invoice design, Firebase configuration and PWA settings will NOT be deleted.\n\nBefore continuing, make sure all current records are only test/demo data.\n\nContinue?")) return;
+  try{
+    exportData();
+    if(!confirm("A backup file has been started for download.\n\nIf you have any REAL customer/business data in this CRM, press Cancel and keep the backup.\n\nIf the data is only FAKE/TEST data, press OK to permanently delete it from Firebase and this browser.")) return;
+    if(firestore && firebaseAuth?.currentUser){
+      const base=await cloudUserBase();
+      const keys=["leads","customers","sales","services","amcs","technicians"];
+      for(const key of keys){
+        const col=base.collection(key);
+        let snap=await col.limit(450).get();
+        while(!snap.empty){
+          const batch=firestore.batch();
+          snap.forEach(doc=>batch.delete(doc.ref));
+          await batch.commit();
+          if(snap.size<450) break;
+          snap=await col.limit(450).get();
+        }
+      }
+      await base.doc("main").delete().catch(e=>{ if(e?.code!=="not-found") throw e; });
+    }
+    db=emptyDB();
+    localStorage.setItem(KEY,JSON.stringify(db));
+    renderAll();
+    fillSaleCustomerList();
+    toast("✅ CRM started fresh — test data removed from Firebase and this browser");
+  }catch(e){
+    console.error(e);
+    toast("⚠️ Reset failed. No local reset was completed. Check Firebase permissions and try again.");
+  }
+}
 updateTopAction("dashboard");
 renderAll();
 fillSaleCustomerList();
